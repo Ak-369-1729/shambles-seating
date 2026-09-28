@@ -62,7 +62,7 @@ export function CinematicLoader({ onComplete }: CinematicLoaderProps) {
       initial={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.8 }}
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-marine-950 text-[#F4E8C1] overflow-hidden"
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-marine-950 text-[#F4E8C1] overflow-hidden"
     >
       {/* Background ambient stars & ocean mist */}
       <div className="absolute inset-0 bg-radial-vignette opacity-70 pointer-events-none" />
@@ -71,9 +71,9 @@ export function CinematicLoader({ onComplete }: CinematicLoaderProps) {
       {/* Skip Button */}
       <button
         onClick={handleSkip}
-        className="absolute top-6 right-6 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-marine-900/80 border border-tesoro-gold/30 text-xs font-mono text-tesoro-gold hover:bg-tesoro-gold hover:text-marine-950 transition-all shadow-gold-glow"
+        className="absolute top-6 right-6 z-[110] flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-marine-900/90 border border-tesoro-gold/50 text-xs font-mono text-tesoro-gold hover:bg-tesoro-gold hover:text-marine-950 transition-all shadow-gold-glow cursor-pointer"
       >
-        <span>Skip Sequence</span>
+        <span>Skip Intro</span>
         <FastForward className="w-3.5 h-3.5" />
       </button>
 

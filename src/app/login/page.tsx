@@ -40,9 +40,9 @@ export default function LoginPage() {
           <div className="w-12 h-12 rounded-xl bg-marine-950 border border-tesoro-gold/50 shadow-gold-glow flex items-center justify-center mx-auto mb-3">
             <Compass className="w-6 h-6 text-tesoro-gold" />
           </div>
-          <h2 className="text-2xl font-serif font-black gold-shimmer tracking-wider">
+          <h1 className="text-2xl font-serif font-black gold-shimmer tracking-wider">
             FLEET ACCESS SIGN IN
-          </h2>
+          </h1>
           <p className="text-xs font-mono text-gray-400 mt-1">
             Authenticate to manage crew charter & view boarding credentials.
           </p>

@@ -38,6 +38,9 @@ export const metadata: Metadata = {
     description: "Exclusive berth allocation and deterministic queue for Frontend Roulette 1.0.",
     images: ["/assets/landing-bg.png"],
   },
+  icons: {
+    icon: "/favicon.ico",
+  },
   robots: {
     index: true,
     follow: true,
@@ -51,9 +54,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-      </head>
       <body className="bg-marine-950 text-[#F4E8C1] min-h-screen selection:bg-tesoro-gold selection:text-marine-950 font-sans antialiased">
         {children}
       </body>

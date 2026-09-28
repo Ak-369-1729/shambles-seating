@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Navbar } from "@/components/navigation/Navbar";
 import { CinematicLoader } from "@/components/scene/CinematicLoader";
 import { LandingHero } from "@/components/scene/LandingHero";
@@ -20,13 +20,17 @@ export default function HomePage() {
   const [activeOffer, setActiveOffer] = useState<any>(null);
 
   // Initial waitlist fallback list
-  const defaultQueue = INITIAL_WAITLIST_CREWS.map((name, index) => ({
-    id: `waitlist-${index + 1}`,
-    crew_name: name,
-    captain_name: `Captain ${name.split(" ")[0]}`,
-    queue_position: index + 1,
-    created_at: new Date(Date.now() - (10 - index) * 60000).toISOString(),
-  }));
+  const defaultQueue = useMemo(
+    () =>
+      INITIAL_WAITLIST_CREWS.map((name, index) => ({
+        id: `waitlist-${index + 1}`,
+        crew_name: name,
+        captain_name: `Captain ${name.split(" ")[0]}`,
+        queue_position: index + 1,
+        created_at: new Date(Date.now() - (10 - index) * 60000).toISOString(),
+      })),
+    []
+  );
 
   // Fetch Event & Queue State
   const fetchFleetState = useCallback(async () => {
@@ -62,7 +66,7 @@ export default function HomePage() {
       });
       setQueueList(defaultQueue);
     }
-  }, []);
+  }, [defaultQueue]);
 
   useEffect(() => {
     fetchFleetState();

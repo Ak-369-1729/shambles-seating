@@ -43,9 +43,9 @@ export default function SignupPage() {
           <div className="w-12 h-12 rounded-xl bg-marine-950 border border-tesoro-gold/50 shadow-gold-glow flex items-center justify-center mx-auto mb-3">
             <Compass className="w-6 h-6 text-tesoro-gold" />
           </div>
-          <h2 className="text-2xl font-serif font-black gold-shimmer tracking-wider">
+          <h1 className="text-2xl font-serif font-black gold-shimmer tracking-wider">
             ENLIST NEW VOYAGER
-          </h2>
+          </h1>
           <p className="text-xs font-mono text-gray-400 mt-1">
             Create your account to submit crew charters and track waitlist standing.
           </p>
@@ -127,6 +127,20 @@ export default function SignupPage() {
                   placeholder="Minimum 6 characters"
                   className="w-full px-4 py-2.5 rounded-lg bg-marine-950 border border-tesoro-gold/30 text-white font-mono text-sm focus:outline-none focus:border-tesoro-gold"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-gray-400 mb-1">
+                  Enlistment Role
+                </label>
+                <select
+                  name="role"
+                  defaultValue="participant"
+                  className="w-full px-4 py-2.5 rounded-lg bg-marine-950 border border-tesoro-gold/30 text-white font-mono text-sm focus:outline-none focus:border-tesoro-gold cursor-pointer"
+                >
+                  <option value="participant">Voyager / Crew Representative</option>
+                  <option value="admin">Fleet Command / Admiralty Officer</option>
+                </select>
               </div>
 
               <button

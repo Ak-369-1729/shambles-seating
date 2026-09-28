@@ -73,46 +73,12 @@ export function LandingHero({
       {/* 2. Three.js / React Three Fiber Dynamic 3D Scene */}
       <ThreeWaterScene />
 
-      {/* 3. Interactive Ocean Swell & Water Movement Overlay */}
-      <div className="absolute bottom-0 inset-x-0 h-48 z-10 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-marine-950 via-marine-950/90 to-transparent" />
-        {/* Animated wave sheen */}
-        <div className="absolute bottom-6 inset-x-0 h-16 bg-gradient-to-r from-transparent via-tesoro-gold/10 to-transparent animate-water-swell blur-md" />
+      {/* 3. Interactive Ocean Swell Gradient Transition */}
+      <div className="absolute bottom-0 inset-x-0 h-40 z-10 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-t from-marine-950 via-marine-950/80 to-transparent" />
+        {/* Animated golden swell sheen */}
+        <div className="absolute bottom-4 inset-x-0 h-12 bg-gradient-to-r from-transparent via-tesoro-gold/15 to-transparent animate-water-swell blur-md" />
       </div>
-
-      {/* 3. Sailing Galleon Silhouette with Bobbing & Cloth/Flag motion */}
-      <motion.div
-        style={{
-          y: shipY,
-          x: -mousePos.x * 0.6,
-        }}
-        className="absolute bottom-28 left-[8%] md:left-[14%] z-10 pointer-events-none"
-      >
-        <div className="relative animate-ship-bob">
-          {/* Subtle Galleon Vessel Outline */}
-          <div className="w-36 h-28 md:w-56 md:h-40 relative opacity-75">
-            {/* Hull */}
-            <div className="absolute bottom-2 left-0 right-0 h-9 bg-gradient-to-r from-[#121929] via-[#213054] to-[#0c1322] rounded-b-3xl border-t border-tesoro-gold/30 shadow-lg" />
-            {/* Main Mast */}
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-2 h-24 bg-[#3d2712] rounded-t-sm" />
-            {/* Main Sails (with wind swell) */}
-            <motion.div
-              animate={{ scaleX: [1, 1.04, 0.98, 1], skewX: [0, 2, -2, 0] }}
-              transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute bottom-14 left-1/2 -translate-x-1/2 w-24 h-16 bg-gradient-to-b from-[#f0e4ca]/90 to-[#bba57e]/80 rounded-t-lg rounded-b-sm border border-tesoro-gold/40 shadow-inner"
-            />
-            {/* Flying Pirate Gala Flag */}
-            <motion.div
-              animate={{ rotate: [-2, 4, -3, 2, -2], skewY: [0, 4, -3, 0] }}
-              transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-0 left-1/2 w-8 h-4 bg-reverie-crimson border border-tesoro-gold/60 origin-left shadow-sm"
-            />
-            {/* Lantern on Stern */}
-            <div className="absolute bottom-7 right-2 w-3 h-3 rounded-full bg-tesoro-amber shadow-[0_0_15px_#ffbf00] animate-ping" />
-            <div className="absolute bottom-7 right-2 w-3 h-3 rounded-full bg-tesoro-gold shadow-[0_0_10px_#d4af37]" />
-          </div>
-        </div>
-      </motion.div>
 
       {/* 4. Atmospheric Gold Dust & Shimmer Particles */}
       <div className="absolute inset-0 z-10 pointer-events-none">

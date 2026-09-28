@@ -38,7 +38,7 @@ export async function signup(formData: FormData) {
       data: {
         full_name: fullName,
         college_id: collegeId,
-        role: "participant",
+        role: (formData.get("role") as string) || "participant",
       },
     },
   });
