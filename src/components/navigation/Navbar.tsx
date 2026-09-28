@@ -2,193 +2,261 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Compass, Anchor, Shield, Menu, X, Users, LogIn, LogOut } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface NavbarProps {
-  user?: { email?: string; role?: string } | null;
-  confirmedCount?: number;
-  capacity?: number;
-  waitlistCount?: number;
+  user: { email?: string; role?: string } | null;
+  confirmedCount: number;
+  capacity: number;
+  waitlistCount: number;
 }
 
-export function Navbar({
-  user = null,
-  confirmedCount = 47,
-  capacity = 50,
-  waitlistCount = 8,
-}: NavbarProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const pathname = usePathname();
+export function Navbar({ user, confirmedCount, capacity, waitlistCount }: NavbarProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const pct = Math.round((confirmedCount / capacity) * 100);
+  const isFull = confirmedCount >= capacity;
 
   const navLinks = [
-    { label: "Voyage Overview", href: "/" },
-    { label: "Assemble Crew", href: "#rsvp" },
-    { label: "Poneglyph Queue", href: "#queue" },
-    { label: "Fleet Command Deck", href: "/admin", adminOnly: true },
+    { href: "#capacity", label: "VOYAGE" },
+    { href: "#rsvp", label: "ENLIST" },
+    { href: "#queue", label: "QUEUE" },
+    ...(user?.role === "admin" ? [{ href: "/admin", label: "COMMAND DECK" }] : []),
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-marine-950/85 backdrop-blur-md border-b border-tesoro-gold/20 shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          {/* Logo & Tagline */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-tesoro-gold to-tesoro-bronze p-0.5 shadow-gold-glow flex items-center justify-center transition-transform group-hover:scale-105">
-              <div className="w-full h-full bg-marine-950 rounded-[7px] flex items-center justify-center">
-                <Compass className="w-6 h-6 text-tesoro-gold animate-spin-slow group-hover:rotate-45 transition-transform" />
-              </div>
+    <>
+      <nav
+        className="fixed top-0 inset-x-0 z-50"
+        style={{
+          background: "linear-gradient(180deg, rgba(1,5,9,0.97) 0%, rgba(2,10,22,0.92) 100%)",
+          borderBottom: "1px solid rgba(212,175,55,0.15)",
+          backdropFilter: "blur(20px)",
+        }}
+      >
+        {/* Gold top stripe */}
+        <div className="h-px w-full" style={{
+          background: "linear-gradient(90deg, transparent, rgba(212,175,55,0.6), rgba(255,191,0,0.8), rgba(212,175,55,0.6), transparent)"
+        }} />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+
+          {/* Brand */}
+          <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all group-hover:scale-105"
+              style={{
+                background: "linear-gradient(135deg, rgba(212,175,55,0.2) 0%, rgba(4,12,28,0.9) 100%)",
+                border: "1px solid rgba(212,175,55,0.35)",
+              }}
+            >
+              <span className="text-sm">⚓</span>
             </div>
-            <div>
-              <div className="font-serif font-bold text-lg md:text-xl tracking-wider gold-shimmer">
+            <div className="hidden sm:block">
+              <div className="text-xs font-serif font-bold tracking-[0.25em] text-tesoro-gold leading-none">
                 SHAMBLES SEATING
               </div>
-              <div className="text-[10px] tracking-widest text-tesoro-gold/70 font-mono uppercase">
+              <div className="text-[8px] font-mono tracking-[0.2em] text-tesoro-gold/40 uppercase leading-none mt-0.5">
                 YOUR BERTH • YOUR CREW • YOUR VOYAGE
               </div>
             </div>
           </Link>
 
-          {/* Center Telemetry Badges */}
-          <div className="hidden lg:flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-marine-900/90 border border-tesoro-gold/30 rounded-full px-3.5 py-1.5 text-xs font-mono shadow-inner">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-gray-300">Berths:</span>
-              <span className="text-tesoro-gold font-bold">
-                {confirmedCount} / {capacity}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2 bg-marine-900/90 border border-reverie-crimson/40 rounded-full px-3.5 py-1.5 text-xs font-mono shadow-inner">
-              <Users className="w-3.5 h-3.5 text-reverie-crimson" />
-              <span className="text-gray-300">Waitlist:</span>
-              <span className="text-reverie-crimson font-bold">
-                {waitlistCount} Crews
-              </span>
-            </div>
+          {/* Desktop nav */}
+          <div className="hidden md:flex items-center gap-1">
+            {navLinks.map(link => (
+              <a
+                key={link.href}
+                href={link.href}
+                className="px-3.5 py-1.5 rounded-lg text-[10px] font-mono font-bold tracking-[0.2em] uppercase transition-all"
+                style={{ color: "rgba(212,175,55,0.5)" }}
+                onMouseEnter={e => {
+                  (e.target as HTMLElement).style.color = "#d4af37";
+                  (e.target as HTMLElement).style.background = "rgba(212,175,55,0.08)";
+                }}
+                onMouseLeave={e => {
+                  (e.target as HTMLElement).style.color = "rgba(212,175,55,0.5)";
+                  (e.target as HTMLElement).style.background = "transparent";
+                }}
+              >
+                {link.label}
+              </a>
+            ))}
           </div>
 
-          {/* Desktop Nav Links */}
-          <div className="hidden md:flex items-center gap-6">
-            {navLinks.map((link) => {
-              if (link.adminOnly && user?.role !== "admin") return null;
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  className={`text-sm tracking-wide transition-colors ${
-                    isActive
-                      ? "text-tesoro-gold font-semibold underline underline-offset-8"
-                      : "text-gray-300 hover:text-tesoro-gold"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-
-            {user ? (
-              <div className="flex items-center gap-3 pl-4 border-l border-tesoro-gold/20">
-                <span className="text-xs font-mono text-tesoro-gold/80 truncate max-w-[140px]">
-                  {user.email}
+          {/* Live capacity gauge */}
+          <div className="hidden lg:flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl"
+              style={{
+                background: "rgba(4,12,28,0.8)",
+                border: "1px solid rgba(212,175,55,0.15)",
+              }}>
+              {/* Mini bar */}
+              <div className="relative w-20 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+                <div
+                  className="h-full rounded-full transition-all duration-1000"
+                  style={{
+                    width: `${pct}%`,
+                    background: isFull ? "#c41e3a" : "#d4af37",
+                    boxShadow: isFull ? "0 0 6px rgba(196,30,58,0.8)" : "0 0 6px rgba(212,175,55,0.6)",
+                  }}
+                />
+              </div>
+              <span className="text-[10px] font-mono text-tesoro-gold/70">
+                {confirmedCount}/{capacity}
+              </span>
+              {waitlistCount > 0 && (
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-mono"
+                  style={{ background: "rgba(196,30,58,0.15)", color: "#c41e3a" }}>
+                  +{waitlistCount}
                 </span>
-                <Link
-                  href="/auth/signout"
-                  className="p-2 rounded-md hover:bg-marine-800 text-gray-400 hover:text-reverie-crimson transition-colors"
-                  title="Sign Out"
+              )}
+            </div>
+          </div>
+
+          {/* Auth controls */}
+          <div className="hidden md:flex items-center gap-2 shrink-0">
+            {user ? (
+              <div className="flex items-center gap-2">
+                <div
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl"
+                  style={{
+                    background: "rgba(4,12,28,0.8)",
+                    border: "1px solid rgba(212,175,55,0.2)",
+                  }}
                 >
-                  <LogOut className="w-4 h-4" />
-                </Link>
+                  <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                  <span className="text-[10px] font-mono text-tesoro-gold/70 max-w-[140px] truncate">
+                    {user.email || "Admiral"}
+                  </span>
+                </div>
+                <form action="/auth/signout" method="POST">
+                  <button
+                    type="submit"
+                    className="px-3 py-1.5 rounded-xl text-[10px] font-mono text-gray-500 hover:text-white uppercase tracking-wider transition-colors"
+                    style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+                  >
+                    DEPART
+                  </button>
+                </form>
               </div>
             ) : (
-              <div className="flex items-center gap-3">
+              <>
                 <Link
                   href="/login"
-                  className="text-xs uppercase tracking-wider font-semibold text-tesoro-gold hover:text-tesoro-amber transition-colors"
+                  className="px-4 py-2 rounded-xl text-[10px] font-mono text-tesoro-gold/70 hover:text-tesoro-gold uppercase tracking-wider transition-colors"
+                  style={{ border: "1px solid rgba(212,175,55,0.2)" }}
                 >
-                  Sign In
+                  BOARD SHIP
                 </Link>
                 <Link
                   href="/signup"
-                  className="px-4 py-2 rounded border border-tesoro-gold bg-gradient-to-r from-tesoro-gold/20 to-tesoro-bronze/30 text-tesoro-gold hover:bg-tesoro-gold hover:text-marine-950 font-semibold text-xs tracking-wider uppercase transition-all shadow-gold-glow"
+                  className="px-4 py-2 rounded-xl text-[10px] font-mono font-bold uppercase tracking-wider transition-all btn-gold"
                 >
-                  Register
+                  ENLIST CREW
                 </Link>
-              </div>
+              </>
             )}
           </div>
 
-          {/* Mobile menu trigger */}
-          <div className="md:hidden flex items-center gap-2">
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg bg-marine-900 border border-tesoro-gold/30 text-tesoro-gold"
-              aria-label="Toggle navigation"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
+          {/* Mobile burger */}
+          <button
+            className="md:hidden w-9 h-9 rounded-lg flex flex-col items-center justify-center gap-1.5 transition-colors"
+            onClick={() => setMenuOpen(v => !v)}
+            style={{ border: "1px solid rgba(212,175,55,0.2)" }}
+          >
+            {[0, 1, 2].map(i => (
+              <span
+                key={i}
+                className="block w-4 h-px bg-tesoro-gold/70 transition-all"
+                style={{
+                  transform: menuOpen
+                    ? i === 0 ? "rotate(45deg) translate(3px, 3px)"
+                    : i === 2 ? "rotate(-45deg) translate(3px, -3px)"
+                    : "scale(0)"
+                    : "none",
+                }}
+              />
+            ))}
+          </button>
         </div>
-      </div>
 
-      {/* Mobile Drawer */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-marine-950/95 border-b border-tesoro-gold/30 px-4 pt-3 pb-6 space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-marine-800">
-            <div className="text-xs font-mono text-gray-400">
-              Capacity: <span className="text-tesoro-gold font-bold">{confirmedCount}/{capacity}</span>
-            </div>
-            <div className="text-xs font-mono text-gray-400">
-              Queue: <span className="text-reverie-crimson font-bold">{waitlistCount} Crews</span>
-            </div>
-          </div>
+        {/* Fill bar */}
+        <div className="h-px w-full" style={{ background: "rgba(255,255,255,0.04)" }}>
+          <motion.div
+            className="h-full"
+            style={{
+              background: isFull
+                ? "linear-gradient(90deg, transparent, rgba(196,30,58,0.5), transparent)"
+                : "linear-gradient(90deg, transparent, rgba(212,175,55,0.3), transparent)",
+            }}
+            animate={{ width: `${pct}%` }}
+            transition={{ duration: 2 }}
+          />
+        </div>
+      </nav>
 
-          <div className="flex flex-col gap-3">
-            {navLinks.map((link) => {
-              if (link.adminOnly && user?.role !== "admin") return null;
-              return (
-                <Link
-                  key={link.label}
+      {/* Mobile menu */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="fixed top-16 inset-x-0 z-40"
+            style={{
+              background: "rgba(1,5,9,0.98)",
+              borderBottom: "1px solid rgba(212,175,55,0.15)",
+              backdropFilter: "blur(20px)",
+            }}
+          >
+            <div className="max-w-7xl mx-auto px-4 py-4 space-y-2">
+              {navLinks.map(link => (
+                <a
+                  key={link.href}
                   href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-base text-gray-200 hover:text-tesoro-gold transition-colors py-1"
+                  onClick={() => setMenuOpen(false)}
+                  className="block px-4 py-2.5 rounded-xl text-sm font-mono text-tesoro-gold/70 uppercase tracking-wider"
+                  style={{ border: "1px solid rgba(212,175,55,0.1)" }}
                 >
                   {link.label}
-                </Link>
-              );
-            })}
-          </div>
-
-          <div className="pt-4 border-t border-marine-800 flex flex-col gap-2">
-            {user ? (
-              <div className="flex items-center justify-between text-xs font-mono text-tesoro-gold">
-                <span>{user.email}</span>
-                <Link href="/auth/signout" className="text-reverie-crimson flex items-center gap-1">
-                  <LogOut className="w-3.5 h-3.5" /> Sign Out
-                </Link>
+                </a>
+              ))}
+              {/* Mobile auth */}
+              {user ? (
+                <form action="/auth/signout" method="POST" className="pt-2">
+                  <button type="submit" className="w-full py-2.5 rounded-xl text-sm font-mono text-gray-400 uppercase"
+                    style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
+                    Depart (Sign Out)
+                  </button>
+                </form>
+              ) : (
+                <div className="flex gap-2 pt-2">
+                  <Link href="/login" className="flex-1 py-2.5 rounded-xl text-sm font-mono text-tesoro-gold/70 text-center uppercase"
+                    style={{ border: "1px solid rgba(212,175,55,0.2)" }}>
+                    Board Ship
+                  </Link>
+                  <Link href="/signup" className="flex-1 py-2.5 rounded-xl text-sm font-mono font-bold text-center uppercase btn-gold">
+                    Enlist Crew
+                  </Link>
+                </div>
+              )}
+              {/* Mobile fill bar */}
+              <div className="pt-3 space-y-1.5">
+                <div className="flex justify-between text-[10px] font-mono text-gray-500">
+                  <span>Fleet Fill</span>
+                  <span>{confirmedCount}/{capacity} • +{waitlistCount} queued</span>
+                </div>
+                <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+                  <div className="h-full rounded-full transition-all" style={{
+                    width: `${pct}%`,
+                    background: isFull ? "#c41e3a" : "linear-gradient(90deg, #996515, #ffbf00)",
+                  }} />
+                </div>
               </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <Link
-                  href="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="py-2 text-center text-sm font-semibold text-tesoro-gold border border-tesoro-gold/40 rounded"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/signup"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="py-2 text-center text-sm font-semibold bg-tesoro-gold text-marine-950 rounded font-bold"
-                >
-                  Sign Up
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </nav>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

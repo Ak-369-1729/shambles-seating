@@ -1,148 +1,307 @@
 "use client";
 
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Scroll, Compass, Shield, Users, ArrowUpRight } from "lucide-react";
+import { DEMO_EVENT } from "@/lib/constants";
 
 interface PoneglyphQueueViewProps {
-  userRegistration?: {
-    crew_name?: string;
-    queue_position?: number | null;
-    status?: string;
-  } | null;
-  queueList: Array<{
-    id: string;
-    crew_name: string;
-    captain_name: string;
-    queue_position: number;
-    created_at: string;
-  }>;
+  userRegistration: any | null;
+  queueList: any[];
 }
 
-export function PoneglyphQueueView({
-  userRegistration,
-  queueList,
-}: PoneglyphQueueViewProps) {
+function ShipIcon({ color = "#d4af37", size = 24 }: { color?: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <ellipse cx="12" cy="18" rx="9" ry="3" fill={color} opacity="0.3" />
+      <path d="M 3 18 Q 12 14 21 18 Q 18 22 12 23 Q 6 22 3 18 Z" fill={color} opacity="0.7" />
+      <path d="M 12 4 L 12 18" stroke={color} strokeWidth="1.5" />
+      <path d="M 12 4 Q 18 8 18 14 Q 12 12 12 14 Q 12 8 12 4 Z" fill="rgba(240,230,200,0.8)" />
+      <path d="M 8 7 Q 12 10 12 14 Q 8 12 8 14 Q 8 8 8 7 Z" fill="rgba(220,210,180,0.6)" />
+      <circle cx="12" cy="3" r="1.5" fill={color} />
+    </svg>
+  );
+}
+
+function PositionBadge({ pos, isUser }: { pos: number; isUser: boolean }) {
+  return (
+    <div
+      className="w-10 h-10 rounded-xl flex items-center justify-center font-mono font-black text-sm shrink-0"
+      style={{
+        background: isUser
+          ? "linear-gradient(135deg, #996515, #d4af37)"
+          : "rgba(8,18,38,0.9)",
+        border: isUser
+          ? "2px solid #ffbf00"
+          : "1px solid rgba(212,175,55,0.2)",
+        boxShadow: isUser ? "0 0 20px rgba(212,175,55,0.5)" : "none",
+        color: isUser ? "#010509" : "rgba(212,175,55,0.6)",
+      }}
+    >
+      #{pos}
+    </div>
+  );
+}
+
+export function PoneglyphQueueView({ userRegistration, queueList }: PoneglyphQueueViewProps) {
+  const [expanded, setExpanded] = useState(false);
+
+  const userPos = userRegistration?.queue_position;
   const isWaitlisted = userRegistration?.status === "WAITLISTED";
-  const userPosition = userRegistration?.queue_position || 3;
-  const crewsAhead = Math.max(0, userPosition - 1);
+  const isOffered = userRegistration?.status === "OFFERED";
+  const displayQueue = expanded ? queueList : queueList.slice(0, 5);
 
   return (
-    <section id="queue" className="py-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
-      <div className="relative rounded-3xl bg-gradient-to-b from-marine-900/90 to-marine-950/95 border-2 border-tesoro-gold/30 p-8 sm:p-12 shadow-2xl backdrop-blur-xl">
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-marine-950 border border-tesoro-gold/30 text-xs font-mono text-tesoro-gold uppercase tracking-widest mb-3">
-            <Scroll className="w-3.5 h-3.5" />
-            <span>Deterministic FIFO Allocation</span>
+    <section
+      id="queue"
+      className="relative w-full overflow-hidden py-16 sm:py-20"
+      style={{ background: "linear-gradient(180deg, #010509 0%, #020b14 50%, #010509 100%)" }}
+    >
+      {/* Nautical grid background */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        backgroundImage: "linear-gradient(rgba(212,175,55,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(212,175,55,0.02) 1px, transparent 1px)",
+        backgroundSize: "60px 60px",
+      }} />
+
+      {/* Crimson vertical accent */}
+      <div className="absolute inset-y-0 left-0 w-1" style={{
+        background: "linear-gradient(180deg, transparent, rgba(196,30,58,0.6), rgba(196,30,58,0.2), transparent)"
+      }} />
+
+      {/* ── Section Header ── */}
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 mb-12">
+        <div className="flex items-center gap-4 mb-2">
+          <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(196,30,58,0.5))" }} />
+          <div className="text-[10px] font-mono tracking-[0.4em] text-reverie-crimson/80 uppercase">Poneglyph Queue</div>
+          <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, rgba(196,30,58,0.5), transparent)" }} />
+        </div>
+        <h2 className="text-3xl sm:text-4xl font-serif font-black text-white tracking-wide text-center">
+          THE WAITING FLEET
+        </h2>
+        <p className="text-center text-xs font-mono text-gray-500 mt-2 uppercase tracking-wider">
+          FIFO · Deterministic · Server-Authoritative
+        </p>
+      </div>
+
+      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 space-y-4">
+
+        {/* ── User status banner ── */}
+        <AnimatePresence>
+          {isOffered && (
+            <motion.div
+              key="offered"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              className="relative rounded-2xl p-5 overflow-hidden"
+              style={{
+                background: "linear-gradient(135deg, rgba(30,18,2,0.98) 0%, rgba(10,8,1,0.99) 100%)",
+                border: "2px solid rgba(212,175,55,0.6)",
+                boxShadow: "0 0 50px rgba(212,175,55,0.3)",
+              }}
+            >
+              <div className="h-1 absolute top-0 inset-x-0" style={{
+                background: "linear-gradient(90deg, transparent, #d4af37, #ffbf00, #d4af37, transparent)"
+              }} />
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(212,175,55,0.2) 0%, rgba(10,8,2,0.9) 100%)",
+                    border: "1px solid rgba(212,175,55,0.5)",
+                  }}>
+                  <ShipIcon color="#ffbf00" size={32} />
+                </div>
+                <div>
+                  <div className="text-[10px] font-mono tracking-[0.3em] text-tesoro-gold/70 uppercase mb-0.5">Active Boarding Permit</div>
+                  <div className="text-xl font-serif font-black gold-shimmer">YOUR BERTH AWAITS</div>
+                  <div className="text-xs font-mono text-gray-400 mt-0.5">Check the boarding permit overlay. 10-minute claim window is active.</div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {isWaitlisted && userPos && (
+            <motion.div
+              key="waitlisted"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="relative rounded-2xl p-5 overflow-hidden"
+              style={{
+                background: "linear-gradient(135deg, rgba(8,18,38,0.98) 0%, rgba(4,10,22,0.99) 100%)",
+                border: "1px solid rgba(196,30,58,0.35)",
+                boxShadow: "0 0 30px rgba(196,30,58,0.1)",
+              }}
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0 animate-breathe"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(196,30,58,0.15) 0%, rgba(4,10,22,0.95) 100%)",
+                    border: "1px solid rgba(196,30,58,0.4)",
+                  }}>
+                  <ShipIcon color="#c41e3a" size={28} />
+                </div>
+                <div className="flex-1">
+                  <div className="text-[10px] font-mono tracking-[0.3em] text-reverie-crimson/70 uppercase mb-0.5">Your Position</div>
+                  <div className="flex items-baseline gap-3">
+                    <span className="text-4xl font-mono font-black text-white">#{userPos}</span>
+                    <span className="text-xs font-mono text-gray-400">in queue</span>
+                  </div>
+                  <div className="text-xs font-mono text-gray-500 mt-1">
+                    {userRegistration.crew_name} — Awaiting promotion to Grand Line
+                  </div>
+                </div>
+                <div className="text-[10px] font-mono text-reverie-crimson/70 uppercase tracking-widest text-right shrink-0">
+                  <div className="w-2 h-2 rounded-full bg-reverie-crimson animate-pulse mx-auto mb-1" />
+                  WAITLISTED
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Ship approach visual ── */}
+        <div
+          className="relative rounded-2xl overflow-hidden"
+          style={{
+            background: "rgba(4,10,22,0.9)",
+            border: "1px solid rgba(212,175,55,0.15)",
+          }}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 py-3 border-b"
+            style={{ borderColor: "rgba(212,175,55,0.12)" }}>
+            <div className="flex items-center gap-2">
+              <ShipIcon size={16} />
+              <span className="text-xs font-mono text-tesoro-gold/80 uppercase tracking-wider">
+                {queueList.length === 0 ? "No Crews Waiting" : `${queueList.length} Crews Approaching`}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-reverie-crimson animate-pulse" />
+              <span className="text-[9px] font-mono text-reverie-crimson/70 uppercase">Live</span>
+            </div>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-black tracking-wide gold-shimmer">
-            PONEGLYPH QUEUE
-          </h2>
-          <p className="text-xs sm:text-sm text-gray-300 font-mono mt-2">
-            The queue is cryptographically transparent and strictly deterministic. Positions recalculate transactionally upon any berth release.
-          </p>
+
+          {queueList.length === 0 ? (
+            <div className="py-16 text-center">
+              <div className="text-4xl mb-3 opacity-20">⚓</div>
+              <div className="text-xs font-mono text-gray-600 uppercase tracking-widest">No crews in queue</div>
+            </div>
+          ) : (
+            <>
+              {/* Ship approach animation bar */}
+              <div className="px-4 py-3 flex items-end gap-1 overflow-hidden"
+                style={{ background: "rgba(2,8,18,0.5)" }}>
+                {/* Ocean line */}
+                <div className="w-full relative h-12 flex items-end gap-1">
+                  {displayQueue.map((crew: any, i: number) => {
+                    const isUser = crew.queue_position === userPos;
+                    const pct = 1 - (i / Math.max(queueList.length, 1));
+                    return (
+                      <motion.div
+                        key={crew.id}
+                        className="flex flex-col items-center gap-0.5 shrink-0"
+                        initial={{ x: -20, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: i * 0.06, duration: 0.4 }}
+                        style={{ width: `${Math.min(64, 100 / Math.min(displayQueue.length, 8))}px` }}
+                      >
+                        <div style={{ opacity: 0.4 + pct * 0.6 }}>
+                          <ShipIcon
+                            color={isUser ? "#ffbf00" : i === 0 ? "#d4af37" : `rgba(212,175,55,${0.3 + pct * 0.4})`}
+                            size={isUser ? 24 : 16 + pct * 10}
+                          />
+                        </div>
+                        {isUser && (
+                          <div className="text-[7px] font-mono text-tesoro-gold uppercase tracking-wide whitespace-nowrap">YOU</div>
+                        )}
+                      </motion.div>
+                    );
+                  })}
+                  {/* Grand Line destination glow */}
+                  <div className="ml-auto flex flex-col items-center justify-end shrink-0">
+                    <div className="w-px h-8 rounded-full animate-pulse" style={{ background: "linear-gradient(to top, #d4af37, transparent)" }} />
+                    <div className="text-[7px] font-mono text-tesoro-gold/60 uppercase mt-0.5">Grand Line</div>
+                  </div>
+                </div>
+              </div>
+              {/* Wave */}
+              <div className="h-px w-full" style={{
+                background: "linear-gradient(90deg, transparent, rgba(100,160,255,0.15), rgba(100,160,255,0.3), rgba(100,160,255,0.15), transparent)"
+              }} />
+
+              {/* Queue rows */}
+              <div className="divide-y" style={{ borderColor: "rgba(212,175,55,0.06)" }}>
+                {displayQueue.map((crew: any, i: number) => {
+                  const isUser = crew.queue_position === userPos;
+                  const isFirst = i === 0;
+                  return (
+                    <motion.div
+                      key={crew.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.04 }}
+                      className="flex items-center gap-4 px-5 py-3.5 relative"
+                      style={{
+                        background: isUser
+                          ? "linear-gradient(90deg, rgba(212,175,55,0.07) 0%, transparent 100%)"
+                          : isFirst
+                          ? "linear-gradient(90deg, rgba(100,200,100,0.04) 0%, transparent 100%)"
+                          : undefined,
+                      }}
+                    >
+                      {isUser && (
+                        <div className="absolute inset-y-0 left-0 w-0.5" style={{ background: "#d4af37" }} />
+                      )}
+                      <PositionBadge pos={crew.queue_position} isUser={isUser} />
+                      <div className="flex-1 min-w-0">
+                        <div className={`font-serif font-bold text-sm leading-tight truncate ${isUser ? "text-tesoro-gold" : "text-white/90"}`}>
+                          {crew.crew_name}
+                        </div>
+                        <div className="text-[10px] font-mono text-gray-500 truncate mt-0.5">
+                          {crew.captain_name || "–"}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {isFirst && (
+                          <div className="px-2 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider"
+                            style={{ background: "rgba(100,200,100,0.1)", border: "1px solid rgba(100,200,100,0.3)", color: "rgba(100,200,100,0.9)" }}>
+                            Next Up
+                          </div>
+                        )}
+                        {isUser && (
+                          <div className="px-2 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider"
+                            style={{ background: "rgba(212,175,55,0.1)", border: "1px solid rgba(212,175,55,0.35)", color: "#d4af37" }}>
+                            YOU
+                          </div>
+                        )}
+                        <ShipIcon color={isUser ? "#ffbf00" : "rgba(212,175,55,0.3)"} size={14} />
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              {queueList.length > 5 && (
+                <button
+                  onClick={() => setExpanded(v => !v)}
+                  className="w-full py-3 text-[11px] font-mono text-tesoro-gold/50 hover:text-tesoro-gold uppercase tracking-wider transition-colors"
+                  style={{ borderTop: "1px solid rgba(212,175,55,0.08)" }}
+                >
+                  {expanded ? "▲ Show Less" : `▼ Show All ${queueList.length} Crews`}
+                </button>
+              )}
+            </>
+          )}
         </div>
 
-        {/* User's Active Position Focus Card (If waitlisted) */}
-        {isWaitlisted && (
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="mb-10 p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-marine-900 via-[#102447] to-marine-900 border-2 border-tesoro-gold shadow-gold-glow-lg text-center relative overflow-hidden"
-          >
-            <div className="text-xs font-mono tracking-widest text-tesoro-amber uppercase mb-1">
-              YOUR CREW: {userRegistration?.crew_name}
-            </div>
-            <div className="text-sm font-mono text-gray-300">CURRENT STANDING</div>
-
-            <div className="my-3 flex items-center justify-center gap-3">
-              <span className="text-xs font-mono text-gray-400">YOUR POSITION:</span>
-              <AnimatePresence mode="popLayout">
-                <motion.span
-                  key={userPosition}
-                  initial={{ y: -20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: 20, opacity: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="text-5xl sm:text-6xl font-mono font-black text-tesoro-gold tracking-tight"
-                >
-                  #{String(userPosition).padStart(2, "0")}
-                </motion.span>
-              </AnimatePresence>
-            </div>
-
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-marine-950/80 border border-tesoro-gold/40 text-xs font-mono text-gray-200">
-              <span className="text-tesoro-gold font-bold">{crewsAhead}</span>
-              <span>CREWS AHEAD OF YOU IN LINE</span>
-            </div>
-
-            <div className="mt-4 text-xs font-mono text-emerald-400 uppercase tracking-wider flex items-center justify-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              STATUS: WAITING FOR A BERTH
-            </div>
-          </motion.div>
-        )}
-
-        {/* Live Waitlist Queue Roster Table */}
-        <div className="overflow-x-auto rounded-2xl border border-tesoro-gold/20 bg-marine-950/70">
-          <table className="w-full text-left text-xs font-mono">
-            <thead className="bg-marine-900/90 text-tesoro-gold uppercase tracking-wider border-b border-tesoro-gold/20">
-              <tr>
-                <th className="py-4 px-6">Queue Rank</th>
-                <th className="py-4 px-6">Crew / Vessel</th>
-                <th className="py-4 px-6">Commanding Officer</th>
-                <th className="py-4 px-6">Eligibility Condition</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-marine-800/60">
-              {queueList.map((crew, idx) => {
-                const isCurrent = crew.queue_position === userPosition && isWaitlisted;
-                return (
-                  <motion.tr
-                    key={crew.id || idx}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: idx * 0.05 }}
-                    className={`${
-                      isCurrent
-                        ? "bg-tesoro-gold/15 text-white font-bold"
-                        : "hover:bg-marine-900/50 text-gray-300"
-                    }`}
-                  >
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`w-7 h-7 rounded-md flex items-center justify-center font-bold text-xs ${
-                            crew.queue_position === 1
-                              ? "bg-gradient-to-br from-tesoro-gold to-tesoro-amber text-marine-950 shadow-gold-glow"
-                              : "bg-marine-800 text-gray-300"
-                          }`}
-                        >
-                          #{crew.queue_position}
-                        </span>
-                        {crew.queue_position === 1 && (
-                          <span className="text-[10px] text-tesoro-gold uppercase font-bold tracking-wider">
-                            Next Eligible
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-4 px-6 font-serif text-sm text-white">
-                      {crew.crew_name}
-                    </td>
-                    <td className="py-4 px-6 text-gray-400">
-                      {crew.captain_name}
-                    </td>
-                    <td className="py-4 px-6">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-marine-900 border border-tesoro-gold/30 text-[11px] text-tesoro-gold">
-                        Waiting for Released Berth
-                      </span>
-                    </td>
-                  </motion.tr>
-                );
-              })}
-            </tbody>
-          </table>
+        {/* World Government footnote */}
+        <div className="text-center pt-4">
+          <div className="text-[10px] font-mono text-gray-700 uppercase tracking-[0.3em]">
+            Queue governed by World Government Reverie Protocol · FIFO · Deterministic
+          </div>
+          <div className="text-[9px] font-mono text-gray-800 mt-1">
+            N 44°12′ W 28°09′ — GRAND LINE FLEET REGISTRY
+          </div>
         </div>
       </div>
     </section>

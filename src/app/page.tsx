@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { Navbar } from "@/components/navigation/Navbar";
 import { CinematicLoader } from "@/components/scene/CinematicLoader";
 import { LandingHero } from "@/components/scene/LandingHero";
-import { NauticalCapacityMeter } from "@/components/capacity/NauticalCapacityMeter";
+import { GrandLineMap } from "@/components/scene/GrandLineMap";
 import { AssembleCrewForm } from "@/components/registration/AssembleCrewForm";
 import { PoneglyphQueueView } from "@/components/waitlist/PoneglyphQueueView";
 import { BoardingPermitModal } from "@/components/offer/BoardingPermitModal";
@@ -18,8 +18,9 @@ export default function HomePage() {
   const [queueList, setQueueList] = useState<any[]>([]);
   const [userRegistration, setUserRegistration] = useState<any>(null);
   const [activeOffer, setActiveOffer] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [shamblesActive, setShamblesActive] = useState(false);
 
-  // Initial waitlist fallback list
   const defaultQueue = useMemo(
     () =>
       INITIAL_WAITLIST_CREWS.map((name, index) => ({
@@ -32,32 +33,24 @@ export default function HomePage() {
     []
   );
 
-  // Fetch Event & Queue State
   const fetchFleetState = useCallback(async () => {
     try {
       const [eventRes, queueRes] = await Promise.all([
         fetch("/api/events"),
         fetch("/api/admin/queue"),
       ]);
-
       const eventJson = await eventRes.json();
       const queueJson = await queueRes.json();
-
       setEventData(eventJson);
-
       if (queueJson.queue && queueJson.queue.length > 0) {
         setQueueList(queueJson.queue);
       } else {
         setQueueList(defaultQueue);
       }
-
-      // Check if there is an active offer in flight
       if (eventJson.active_offer) {
         setActiveOffer(eventJson.active_offer);
       }
-    } catch (err) {
-      console.error("Failed to load fleet state:", err);
-      // Sensible defaults
+    } catch {
       setEventData({
         confirmed_count: DEMO_EVENT.DEMO_CONFIRMED,
         capacity: DEMO_EVENT.TOTAL_CAPACITY,
@@ -71,41 +64,42 @@ export default function HomePage() {
   useEffect(() => {
     fetchFleetState();
 
-    // Check if user has already seen loader in current session
-    const seen = sessionStorage.getItem("shambles_loader_seen");
-    if (seen === "true") {
-      setShowLoader(false);
-    }
+    const fetchAuthUser = async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const json = await res.json();
+          if (json.authenticated && json.user) {
+            setCurrentUser(json.user);
+            return;
+          }
+        }
+        const stored = localStorage.getItem("shambles_user_session");
+        if (stored) {
+          try { setCurrentUser(JSON.parse(stored)); return; } catch {}
+        }
+        setCurrentUser(null);
+      } catch {}
+    };
+    fetchAuthUser();
 
-    // Try Realtime connection via browser client
+    const seen = sessionStorage.getItem("shambles_loader_seen");
+    if (seen === "true") setShowLoader(false);
+
     try {
       const supabase = createClient();
       const channel = supabase
         .channel("fleet_updates")
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "registrations" },
-          () => fetchFleetState()
-        )
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "berth_offers" },
-          () => fetchFleetState()
-        )
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "events" },
-          () => fetchFleetState()
-        )
+        .on("postgres_changes", { event: "*", schema: "public", table: "registrations" }, () => {
+          fetchFleetState();
+          // Trigger SHAMBLES animation when a berth is released/offered
+          setShamblesActive(true);
+        })
+        .on("postgres_changes", { event: "*", schema: "public", table: "berth_offers" }, () => fetchFleetState())
+        .on("postgres_changes", { event: "*", schema: "public", table: "events" }, () => fetchFleetState())
         .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    } catch (err) {
-      // Supabase env vars might be placeholders until user inputs keys
-      console.warn("Realtime listener standing by.");
-    }
+      return () => { supabase.removeChannel(channel); };
+    } catch {}
   }, [fetchFleetState]);
 
   const handleLoaderComplete = () => {
@@ -119,12 +113,7 @@ export default function HomePage() {
   };
 
   const handleClaimSuccess = () => {
-    if (userRegistration) {
-      setUserRegistration({
-        ...userRegistration,
-        status: "CONFIRMED",
-      });
-    }
+    if (userRegistration) setUserRegistration({ ...userRegistration, status: "CONFIRMED" });
     setActiveOffer(null);
     fetchFleetState();
   };
@@ -141,17 +130,16 @@ export default function HomePage() {
 
   return (
     <>
-      {/* 1. Signature Handcrafted 13-Step Loading Sequence */}
       {showLoader && <CinematicLoader onComplete={handleLoaderComplete} />}
 
-      {/* 2. Top Navigation Bar */}
       <Navbar
+        user={currentUser}
         confirmedCount={confirmedCount}
         capacity={capacity}
         waitlistCount={waitlistCount}
       />
 
-      {/* 3. Interactive Parallax Landing Scene */}
+      {/* 1. Cinematic Hero */}
       <LandingHero
         confirmedCount={confirmedCount}
         capacity={capacity}
@@ -159,15 +147,52 @@ export default function HomePage() {
         waitlistCount={waitlistCount}
       />
 
-      {/* 4. Live Nautical Capacity Meter */}
-      <NauticalCapacityMeter
+      {/* 2. Grand Line Interactive Capacity Map */}
+      <GrandLineMap
         confirmedCount={confirmedCount}
         capacity={capacity}
         availableCapacity={availableCapacity}
-        activeOfferInFlight={Boolean(activeOffer)}
+        waitlistCount={waitlistCount}
+        shamblesActive={shamblesActive}
+        onShamblesComplete={() => setShamblesActive(false)}
       />
 
-      {/* 5. Conditional Display: Secured Pass vs. Registration vs. Waitlist */}
+      {/* 3. Gran Tesoro → Reverie section divider */}
+      <div
+        className="relative w-full py-10 overflow-hidden"
+        style={{
+          background: "linear-gradient(180deg, #020b14 0%, #08040a 50%, #020b14 100%)",
+          borderTop: "1px solid rgba(212,175,55,0.08)",
+          borderBottom: "1px solid rgba(196,30,58,0.08)",
+        }}
+      >
+        <div className="absolute inset-0 pointer-events-none" style={{
+          background: "radial-gradient(ellipse at 50% 50%, rgba(196,30,58,0.04) 0%, transparent 70%)"
+        }} />
+        <div className="relative max-w-4xl mx-auto px-4 text-center">
+          <div className="flex items-center justify-center gap-6 flex-wrap">
+            <div>
+              <div className="text-[8px] font-mono tracking-[0.4em] text-tesoro-gold/40 uppercase">Theme</div>
+              <div className="text-sm font-serif font-bold text-tesoro-gold/80 tracking-widest uppercase">GRAN TESORO VIP GALA</div>
+            </div>
+            <div className="text-xl text-tesoro-gold/20 font-serif">×</div>
+            <div>
+              <div className="text-[8px] font-mono tracking-[0.4em] text-reverie-crimson/40 uppercase">Co-Hosted By</div>
+              <div className="text-sm font-serif font-bold text-reverie-crimson/70 tracking-widest uppercase">WORLD GOVERNMENT REVERIE</div>
+            </div>
+            <div className="text-xl text-tesoro-gold/20 font-serif">→</div>
+            <div>
+              <div className="text-[8px] font-mono tracking-[0.4em] text-white/30 uppercase">Event</div>
+              <div className="text-sm font-serif font-bold text-white/60 tracking-widest uppercase">FRONTEND ROULETTE 1.0</div>
+            </div>
+          </div>
+          <div className="mt-4 text-[9px] font-mono text-gray-700 tracking-widest uppercase">
+            {DEMO_EVENT.DATE} • {DEMO_EVENT.VENUE} • {DEMO_EVENT.TIME}
+          </div>
+        </div>
+      </div>
+
+      {/* 4. Registration / Pass / Queue */}
       {userRegistration?.status === "CONFIRMED" ? (
         <GrandLineAccessPass
           registration={userRegistration}
@@ -175,13 +200,11 @@ export default function HomePage() {
         />
       ) : (
         <>
-          {/* Assemble Your Crew (RSVP) */}
           <AssembleCrewForm
             availableCapacity={availableCapacity}
             onSuccess={handleRegistrationSuccess}
+            currentUser={currentUser}
           />
-
-          {/* Poneglyph Queue Tracker */}
           <PoneglyphQueueView
             userRegistration={userRegistration}
             queueList={queueList}
@@ -189,29 +212,69 @@ export default function HomePage() {
         </>
       )}
 
-      {/* 6. Active Boarding Permit Modal (10-minute Server-Synced Window) */}
+      {/* 5. Active Boarding Permit */}
       {activeOffer && (
         <BoardingPermitModal
           offer={activeOffer}
           onClaimed={handleClaimSuccess}
-          onExpired={() => {
-            setActiveOffer(null);
-            fetchFleetState();
-          }}
+          onExpired={() => { setActiveOffer(null); fetchFleetState(); }}
         />
       )}
 
-      {/* 7. Footer */}
-      <footer className="py-12 border-t border-tesoro-gold/20 text-center text-xs font-mono text-gray-500 bg-marine-950">
-        <div className="max-w-7xl mx-auto px-4 space-y-2">
-          <div className="font-serif font-bold text-tesoro-gold tracking-widest uppercase">
-            SHAMBLES SEATING
+      {/* 6. Footer */}
+      <footer
+        className="relative overflow-hidden text-center"
+        style={{
+          background: "linear-gradient(180deg, #010509 0%, #000304 100%)",
+          borderTop: "1px solid rgba(212,175,55,0.08)",
+        }}
+      >
+        <div className="h-px w-full" style={{
+          background: "linear-gradient(90deg, transparent, rgba(212,175,55,0.4), rgba(255,191,0,0.5), rgba(212,175,55,0.4), transparent)"
+        }} />
+        <div className="relative max-w-7xl mx-auto px-4 py-14">
+          <div className="flex flex-col items-center gap-4 mb-8">
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center"
+              style={{
+                background: "linear-gradient(135deg, rgba(212,175,55,0.12) 0%, rgba(4,12,28,0.9) 100%)",
+                border: "1px solid rgba(212,175,55,0.25)",
+              }}
+            >
+              <span className="text-xl">⚓</span>
+            </div>
+            <div>
+              <div className="text-base font-serif font-bold tracking-[0.35em] gold-shimmer uppercase">
+                SHAMBLES SEATING
+              </div>
+              <div className="text-[9px] tracking-[0.25em] text-tesoro-gold/35 uppercase mt-1">
+                YOUR BERTH • YOUR CREW • YOUR VOYAGE
+              </div>
+            </div>
           </div>
-          <div>
-            YOUR BERTH • YOUR CREW • YOUR VOYAGE • {DEMO_EVENT.NAME}
+
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <div className="flex-1 max-w-xs h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(212,175,55,0.15))" }} />
+            <span className="text-tesoro-gold/25">⚓</span>
+            <div className="flex-1 max-w-xs h-px" style={{ background: "linear-gradient(90deg, rgba(212,175,55,0.15), transparent)" }} />
           </div>
-          <div className="text-[10px] text-gray-600">
-            Gran Tesoro VIP Gala & Reverie Summit Architecture • PS-09 Smart Event RSVP System
+
+          <div className="flex flex-wrap justify-center gap-6 mb-6 text-[10px] font-mono">
+            {["#capacity", "#rsvp", "#queue"].map((href, i) => (
+              <a
+                key={href}
+                href={href}
+                className="text-gray-600 hover:text-tesoro-gold/70 uppercase tracking-widest transition-colors"
+              >
+                {["Fleet Capacity", "Assemble Crew", "Poneglyph Queue"][i]}
+              </a>
+            ))}
+          </div>
+
+          <div className="space-y-1.5 text-[10px] font-mono">
+            <div className="text-gray-700">{DEMO_EVENT.NAME} • {DEMO_EVENT.DATE} • {DEMO_EVENT.VENUE}</div>
+            <div className="text-gray-800">Gran Tesoro VIP Gala & Reverie Summit • PS-09 Smart Event RSVP System</div>
+            <div className="text-tesoro-gold/15 tracking-widest mt-3">⚓ N 44°12′ W 28°09′ — GRAND LINE FLEET REGISTRY</div>
           </div>
         </div>
       </footer>
