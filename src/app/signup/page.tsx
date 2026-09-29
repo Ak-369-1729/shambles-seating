@@ -60,7 +60,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex overflow-hidden" style={{ background: "#030810" }}>
+    <div className="auth-world relative min-h-screen flex overflow-hidden" style={{ background: "#030810" }}>
       {/* LEFT: Auth form panel */}
       <div className="flex-1 lg:w-1/2 flex flex-col items-center justify-center relative px-6 py-12 order-1 lg:order-none">
         <div className="absolute inset-0 pointer-events-none">
@@ -83,7 +83,7 @@ export default function SignupPage() {
           </Link>
 
           <div
-            className="rounded-3xl p-8 relative overflow-hidden"
+            className="auth-credential p-8 relative overflow-hidden"
             style={{
               background: "linear-gradient(160deg, rgba(8,18,38,0.97) 0%, rgba(6,12,28,0.99) 100%)",
               border: "1px solid rgba(212,175,55,0.25)",
@@ -100,8 +100,8 @@ export default function SignupPage() {
               >
                 <span className="text-2xl">⚓</span>
               </div>
-              <h1 className="text-2xl font-serif font-black gold-shimmer tracking-wider">ENLIST NEW VOYAGER</h1>
-              <p className="text-xs font-mono text-gray-500 mt-2">Create your account to establish instant crew charter credentials.</p>
+              <h1 className="text-2xl font-serif font-black gold-shimmer tracking-wider">ENLIST YOUR CREW</h1>
+              <p className="text-xs font-mono text-gray-400 mt-2">Open the manifest and establish your captain&apos;s credentials.</p>
             </div>
 
             {/* Error */}

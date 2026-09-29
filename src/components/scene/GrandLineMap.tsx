@@ -143,7 +143,7 @@ export function GrandLineMap({
             animate={{ opacity: shamblesPhase >= 4 ? 0 : 0.35 }}
             exit={{ opacity: 0 }}
             className="absolute inset-0 z-30 pointer-events-none"
-            style={{ background: "radial-gradient(ellipse at center, rgba(196,30,58,0.2) 0%, rgba(0,0,0,0.4) 100%)" }}
+            style={{ background: "radial-gradient(ellipse at center, rgba(228,87,86,0.18) 0%, rgba(7,30,43,0.38) 100%)" }}
           />
         )}
       </AnimatePresence>
@@ -159,7 +159,7 @@ export function GrandLineMap({
             <div className="text-center">
               <div
                 className="text-7xl sm:text-9xl font-serif font-black tracking-[0.2em] crimson-shimmer"
-                style={{ textShadow: "0 0 80px rgba(196,30,58,0.6)" }}
+                style={{ textShadow: "0 0 80px rgba(228,87,86,0.6)" }}
               >
                 SHAMBLES
               </div>
@@ -209,15 +209,15 @@ export function GrandLineMap({
           <defs>
             <linearGradient id="routeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#4a3000" stopOpacity="0.5" />
-              <stop offset="30%" stopColor="#d4af37" stopOpacity="0.7" />
-              <stop offset="50%" stopColor="#ffbf00" stopOpacity="1" />
-              <stop offset="70%" stopColor="#d4af37" stopOpacity="0.7" />
+              <stop offset="30%" stopColor="#007c83" stopOpacity="0.78" />
+              <stop offset="50%" stopColor="#e9b949" stopOpacity="1" />
+              <stop offset="70%" stopColor="#007c83" stopOpacity="0.78" />
               <stop offset="100%" stopColor="#4a3000" stopOpacity="0.5" />
             </linearGradient>
             <linearGradient id="routeGlow" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#d4af37" stopOpacity="0" />
-              <stop offset="50%" stopColor="#ffbf00" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#d4af37" stopOpacity="0" />
+              <stop offset="0%" stopColor="#007c83" stopOpacity="0" />
+              <stop offset="50%" stopColor="#83c5be" stopOpacity="0.62" />
+              <stop offset="100%" stopColor="#007c83" stopOpacity="0" />
             </linearGradient>
             <filter id="berthBlur">
               <feGaussianBlur stdDeviation="2" result="blur" />
@@ -306,7 +306,8 @@ export function GrandLineMap({
             const isOccupied = i < confirmedCount;
             const isOpen = !isOccupied;
             const isHovered = hoveredBerth === i;
-            const isShamblesTarget = shamblesActive && i === confirmedCount - 1;
+            const isShamblesTarget = shamblesActive && i === confirmedCount;
+            const markerType = i % 9;
             return (
               <g
                 key={i}
@@ -316,44 +317,54 @@ export function GrandLineMap({
                 onMouseLeave={() => setHoveredBerth(null)}
               >
                 {isOccupied ? (
-                  // ── Occupied: tiny ship silhouette ──
                   <g filter={isHovered ? "url(#berthBlur)" : undefined}>
+                    {markerType === 0 ? (
+                      <g>
+                        <circle cx="0" cy="0" r="8" fill="rgba(231,184,75,0.1)" />
+                        <path d="M -4,2 L 0,-5 L 4,2 L 2,5 L -2,5 Z" fill="#c44536" stroke="#f7e7c6" strokeWidth="0.6" />
+                        <circle cx="0" cy="0" r="1.4" fill="#f7e7c6" />
+                      </g>
+                    ) : (
+                      <g>
                     {/* Ship hull */}
-                    <ellipse cx="0" cy="3" rx="7" ry="2.5" fill="#8a6c1b" opacity="0.9" />
+                    <ellipse cx="0" cy="3" rx={markerType === 4 ? 9 : 7} ry="2.5" fill="#3a2417" opacity="0.95" />
                     {/* Ship body */}
-                    <path d="M -6,3 Q 0,-4 6,3 Z" fill={isShamblesTarget ? "#c41e3a" : "#d4af37"} opacity="0.9">
+                    <path d={markerType === 4 ? "M -8,3 Q 0,-5 8,3 Z" : "M -6,3 Q 0,-4 6,3 Z"} fill={isShamblesTarget ? "#c44536" : markerType === 4 ? "#0b7a75" : "#e7b84b"} opacity="0.95">
                       {isShamblesTarget && (
                         <animate attributeName="opacity" values="0.5;1;0.5" dur="0.6s" repeatCount="indefinite" />
                       )}
                     </path>
                     {/* Mast */}
-                    <line x1="0" y1="-4" x2="0" y2="3" stroke="#d4af37" strokeWidth="0.7" />
+                    <line x1="0" y1={markerType === 4 ? -6 : -4} x2="0" y2="3" stroke="#f7e7c6" strokeWidth="0.7" />
                     {/* Sail */}
-                    <path d="M 0,-4 Q 3.5,0 0,3 Z" fill="rgba(255,243,205,0.8)" />
+                    <path d={markerType === 4 ? "M 0,-6 Q 5,-2 0,2 Z" : "M 0,-4 Q 3.5,0 0,3 Z"} fill="#f7e7c6" />
+                    {markerType === 4 && <path d="M 0,-6 L 4,-9 L 4,-5 Z" fill="#c44536" />}
                     {/* Lantern glow */}
-                    <circle cx="0" cy="-5" r="1.2" fill="#ffbf00">
+                    <circle cx="0" cy="-5" r={markerType === 4 ? 1.8 : 1.2} fill="#f7e7c6">
                       <animate attributeName="r" values="1;1.5;1" dur="2s" repeatCount="indefinite" />
                       <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite" />
                     </circle>
                     {/* Wake */}
                     <ellipse cx="0" cy="5" rx="5" ry="1" fill="rgba(180,220,255,0.2)" />
                     {isHovered && (
-                      <text x="0" y="-12" textAnchor="middle" fontSize="6" fill="#d4af37" fontFamily="monospace">
+                      <text x="0" y="-12" textAnchor="middle" fontSize="6" fill="#e9b949" fontFamily="monospace">
                         #{i + 1}
                       </text>
+                    )}
+                      </g>
                     )}
                   </g>
                 ) : (
                   // ── Open berth: glowing navigation marker ──
                   <g filter="url(#openBlur)">
-                    <circle cx="0" cy="0" r="8" fill="rgba(100,200,255,0.08)" stroke="rgba(100,200,255,0.6)" strokeWidth="1">
+                    <circle cx="0" cy="0" r="8" fill={isShamblesTarget ? "rgba(196,69,54,0.2)" : "rgba(62,182,168,0.12)"} stroke={isShamblesTarget ? "#c44536" : "#3eb6a8"} strokeWidth="1.2">
                       <animate attributeName="r" values="6;10;6" dur="2s" repeatCount="indefinite" />
                       <animate attributeName="stroke-opacity" values="0.4;0.9;0.4" dur="2s" repeatCount="indefinite" />
                     </circle>
-                    <circle cx="0" cy="0" r="3" fill="rgba(100,200,255,0.9)">
+                    <circle cx="0" cy="0" r="3" fill={isShamblesTarget ? "#e7b84b" : "#3eb6a8"}>
                       <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite" />
                     </circle>
-                    <text x="0" y="-12" textAnchor="middle" fontSize="6" fill="rgba(100,200,255,0.9)" fontFamily="monospace">
+                    <text x="0" y="-12" textAnchor="middle" fontSize="6" fill="rgba(131,197,190,0.95)" fontFamily="monospace">
                       OPEN
                     </text>
                   </g>
@@ -377,7 +388,7 @@ export function GrandLineMap({
             </ellipse>
             {/* Hull */}
             <path d="M -28,12 Q 0,20 28,12 Q 20,24 0,26 Q -20,24 -28,12 Z" fill="#3d2208" stroke="#8a6c1b" strokeWidth="1" />
-            <path d="M -24,14 Q 0,8 24,14" stroke="#d4af37" strokeWidth="0.8" fill="none" />
+            <path d="M -24,14 Q 0,8 24,14" stroke="#e9b949" strokeWidth="0.8" fill="none" />
             {/* Body */}
             <path d="M -20,14 L -18,-2 Q 0,-6 18,-2 L 20,14 Z" fill="#6b3c14" stroke="#8a6c1b" strokeWidth="0.8" />
             {/* Bridge */}
@@ -399,14 +410,14 @@ export function GrandLineMap({
             {/* Flag */}
             <g transform="translate(4,-45)">
               <line x1="0" y1="0" x2="0" y2="-12" stroke="#3d2208" strokeWidth="1" />
-              <rect x="0" y="-12" width="14" height="8" rx="1" fill="#c41e3a">
+              <rect x="0" y="-12" width="14" height="8" rx="1" fill="#e45756">
                 <animateTransform attributeName="transform" type="skewY"
                   values="0;3;-2;3;0" dur="2s" repeatCount="indefinite" />
               </rect>
               <text x="7" y="-7" textAnchor="middle" fontSize="5" fill="white">☠</text>
             </g>
             {/* Lantern glow */}
-            <circle cx="-8" cy="-30" r="3" fill="#ffbf00" opacity="0.5">
+            <circle cx="-8" cy="-30" r="3" fill="#f6e7c1" opacity="0.5">
               <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2.5s" repeatCount="indefinite" />
               <animate attributeName="r" values="2.5;4;2.5" dur="2.5s" repeatCount="indefinite" />
             </circle>
@@ -416,20 +427,30 @@ export function GrandLineMap({
           </g>
 
           {/* ── Grand Line text label ── */}
-          <text x="600" y="60" textAnchor="middle" fontSize="11" fill="rgba(212,175,55,0.6)" fontFamily="monospace" letterSpacing="5" textDecoration="none">
+          <text x="600" y="60" textAnchor="middle" fontSize="11" fill="rgba(233,185,73,0.8)" fontFamily="monospace" letterSpacing="5" textDecoration="none">
             ── GRAND LINE ──
           </text>
 
-          {/* Waitlist approach ships — left side */}
+          {/* Waiting fleet holds outside the final berth gate */}
           {Array.from({ length: Math.min(waitlistCount, 5) }, (_, i) => (
-            <g key={`wait-${i}`} transform={`translate(${-80 + i * 18}, ${370 + i * 8})`}>
+            <g key={`wait-${i}`} transform={`translate(${1110 + i * 18}, ${260 + i * 16})`}>
+              {shamblesActive && i === 0 && pathPoints[confirmedCount] && (
+                <animateTransform
+                  attributeName="transform"
+                  type="translate"
+                  values={`1110,260; 1100,250; ${pathPoints[confirmedCount].x},${pathPoints[confirmedCount].y}`}
+                  begin="0.45s"
+                  dur="1.25s"
+                  fill="freeze"
+                />
+              )}
               <ellipse cx="0" cy="4" rx="5" ry="2" fill="#3d2208" opacity="0.8" />
-              <path d="M -4,4 Q 0,-2 4,4 Z" fill="rgba(196,30,58,0.7)" />
-              <line x1="0" y1="-2" x2="0" y2="4" stroke="rgba(212,175,55,0.5)" strokeWidth="0.6" />
-              <circle cx="0" cy="-3" r="0.8" fill="rgba(212,175,55,0.6)">
+              <path d="M -4,4 Q 0,-2 4,4 Z" fill="rgba(228,87,86,0.82)" />
+              <line x1="0" y1="-2" x2="0" y2="4" stroke="rgba(233,185,73,0.72)" strokeWidth="0.6" />
+              <circle cx="0" cy="-3" r="0.8" fill="rgba(233,185,73,0.8)">
                 <animate attributeName="opacity" values="0.4;0.9;0.4" dur={`${2 + i * 0.3}s`} repeatCount="indefinite" />
               </circle>
-              <text x="0" y="-8" textAnchor="middle" fontSize="5" fill="rgba(212,175,55,0.7)" fontFamily="monospace">
+              <text x="0" y="-8" textAnchor="middle" fontSize="5" fill="rgba(233,185,73,0.85)" fontFamily="monospace">
                 #{i + 1}
               </text>
             </g>
@@ -437,89 +458,29 @@ export function GrandLineMap({
         </svg>
       </div>
 
-      {/* ── Capacity callout overlay ── */}
-      <div className="absolute bottom-0 inset-x-0 z-20 pb-6 pointer-events-none">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-end sm:items-center justify-between gap-4">
-          {/* Left: main stat */}
-          <div>
-            <div className="text-[10px] font-mono text-tesoro-gold/50 uppercase tracking-[0.3em] mb-1">Grand Line Capacity</div>
-            <div className="flex items-baseline gap-3">
-              <span className="text-5xl sm:text-6xl font-mono font-black text-white leading-none">{confirmedCount}</span>
-              <span className="text-2xl font-mono text-gray-500">/ {capacity}</span>
-              <span className="text-sm font-mono text-tesoro-gold/70 uppercase tracking-wider">BERTHS</span>
-            </div>
-            <div className="mt-2 h-1.5 w-64 rounded-full bg-marine-800 overflow-hidden">
-              <motion.div
-                className="h-full rounded-full"
-                style={{
-                  background: isFull
-                    ? "linear-gradient(90deg, #8b0000, #c41e3a)"
-                    : "linear-gradient(90deg, #d4af37, #ffbf00)",
-                  boxShadow: isFull ? "0 0 10px rgba(196,30,58,0.6)" : "0 0 10px rgba(212,175,55,0.6)",
-                }}
-                initial={{ width: 0 }}
-                animate={{ width: `${pct}%` }}
-                transition={{ duration: 2, ease: "easeOut" }}
-              />
-            </div>
-          </div>
-
-          {/* Right: status badges */}
-          <div className="flex items-center gap-3">
-            <div
-              className="px-4 py-2 rounded-xl text-center"
-              style={{
-                background: "rgba(6,18,40,0.9)",
-                border: `1px solid ${availableCapacity > 0 ? "rgba(100,200,100,0.35)" : "rgba(196,30,58,0.35)"}`,
-                backdropFilter: "blur(12px)",
-              }}
-            >
-              <div className="text-[9px] font-mono text-gray-500 uppercase tracking-wider">Open Berths</div>
-              <div className={`text-2xl font-mono font-black ${availableCapacity > 0 ? "text-emerald-400" : "text-reverie-crimson"}`}>
-                {availableCapacity}
-              </div>
-            </div>
-            <div
-              className="px-4 py-2 rounded-xl text-center"
-              style={{
-                background: "rgba(6,18,40,0.9)",
-                border: "1px solid rgba(196,30,58,0.25)",
-                backdropFilter: "blur(12px)",
-              }}
-            >
-              <div className="text-[9px] font-mono text-gray-500 uppercase tracking-wider">Queue</div>
-              <div className="text-2xl font-mono font-black text-reverie-crimson">{waitlistCount}</div>
-            </div>
-            {isFull && (
-              <div
-                className="px-4 py-2 rounded-xl"
-                style={{
-                  background: "rgba(40,0,0,0.9)",
-                  border: "1px solid rgba(196,30,58,0.5)",
-                  backdropFilter: "blur(12px)",
-                }}
-              >
-                <div className="text-[10px] font-mono text-reverie-crimson font-bold uppercase tracking-wider animate-pulse">
-                  ☠ PORT CLOSED
-                </div>
-              </div>
-            )}
-          </div>
+      <div className="route-title absolute inset-x-0 top-0 z-20 pointer-events-none">
+        <div>
+          <span>01 · Live berth registry</span>
+          <h2>The Grand Line</h2>
         </div>
+        <div className="route-live"><i />Realtime fleet signal</div>
       </div>
 
-      {/* Section heading — top-left */}
-      <div className="absolute top-0 inset-x-0 z-20 pt-8 px-4 sm:px-8 pointer-events-none">
-        <div className="max-w-7xl mx-auto flex items-center gap-3">
-          <div className="h-px flex-1 bg-gradient-to-r from-transparent to-tesoro-gold/25" />
-          <div className="text-[10px] font-mono tracking-[0.3em] text-tesoro-gold/60 uppercase">
-            Live Grand Line Fleet Map
+      <div className="route-ledger absolute inset-x-0 bottom-0 z-20 pointer-events-none">
+        <div className="route-ledger-inner">
+          <div className="route-ledger-main">
+            <span>Confirmed crews · event capacity</span>
+            <div><strong>{confirmedCount}</strong><i>/</i><b>{capacity}</b><em>berths claimed</em></div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[9px] font-mono text-emerald-400/70 uppercase tracking-wider">Realtime</span>
+          <div className="route-ledger-open">
+            <span>{isFull ? "Port status" : "Open berth gates"}</span>
+            <strong className={isFull ? "is-closed" : ""}>{isFull ? "CLOSED" : String(availableCapacity).padStart(2, "0")}</strong>
           </div>
-          <div className="h-px flex-1 bg-gradient-to-l from-transparent to-tesoro-gold/25" />
+          <div className="route-ledger-queue">
+            <span>Ships approaching</span>
+            <strong>{String(waitlistCount).padStart(2, "0")}</strong>
+          </div>
+          <div className="route-key"><i className="key-ship" />Claimed <i className="key-gate" />Open <i className="key-queue" />Queue</div>
         </div>
       </div>
 
@@ -536,8 +497,8 @@ export function GrandLineMap({
             className="px-2.5 py-1.5 rounded-lg text-[10px] font-mono whitespace-nowrap"
             style={{
               background: "rgba(4,12,28,0.95)",
-              border: `1px solid ${hoveredBerth < confirmedCount ? "rgba(212,175,55,0.4)" : "rgba(100,200,255,0.5)"}`,
-              color: hoveredBerth < confirmedCount ? "#d4af37" : "rgba(100,200,255,0.9)",
+              border: `1px solid ${hoveredBerth < confirmedCount ? "rgba(233,185,73,0.45)" : "rgba(131,197,190,0.58)"}`,
+              color: hoveredBerth < confirmedCount ? "#e9b949" : "rgba(131,197,190,0.95)",
             }}
           >
             Berth #{hoveredBerth + 1} — {hoveredBerth < confirmedCount ? "Claimed" : "OPEN"}

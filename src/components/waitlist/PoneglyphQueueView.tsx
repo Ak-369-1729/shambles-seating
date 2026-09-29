@@ -9,7 +9,7 @@ interface PoneglyphQueueViewProps {
   queueList: any[];
 }
 
-function ShipIcon({ color = "#d4af37", size = 24 }: { color?: string; size?: number }) {
+function ShipIcon({ color = "#e9b949", size = 24 }: { color?: string; size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <ellipse cx="12" cy="18" rx="9" ry="3" fill={color} opacity="0.3" />
@@ -25,16 +25,16 @@ function ShipIcon({ color = "#d4af37", size = 24 }: { color?: string; size?: num
 function PositionBadge({ pos, isUser }: { pos: number; isUser: boolean }) {
   return (
     <div
-      className="w-10 h-10 rounded-xl flex items-center justify-center font-mono font-black text-sm shrink-0"
+      className="queue-position w-10 h-10 rounded-full flex items-center justify-center font-mono font-black text-sm shrink-0"
       style={{
         background: isUser
-          ? "linear-gradient(135deg, #996515, #d4af37)"
+          ? "linear-gradient(135deg, #007c83, #83c5be)"
           : "rgba(8,18,38,0.9)",
         border: isUser
-          ? "2px solid #ffbf00"
-          : "1px solid rgba(212,175,55,0.2)",
-        boxShadow: isUser ? "0 0 20px rgba(212,175,55,0.5)" : "none",
-        color: isUser ? "#010509" : "rgba(212,175,55,0.6)",
+          ? "2px solid #83c5be"
+          : "1px solid rgba(233,185,73,0.28)",
+        boxShadow: isUser ? "0 0 20px rgba(0,124,131,0.55)" : "none",
+        color: isUser ? "#071e2b" : "rgba(233,185,73,0.72)",
       }}
     >
       #{pos}
@@ -58,21 +58,21 @@ export function PoneglyphQueueView({ userRegistration, queueList }: PoneglyphQue
     >
       {/* Nautical grid background */}
       <div className="absolute inset-0 pointer-events-none" style={{
-        backgroundImage: "linear-gradient(rgba(212,175,55,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(212,175,55,0.02) 1px, transparent 1px)",
+        backgroundImage: "linear-gradient(rgba(131,197,190,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(131,197,190,0.035) 1px, transparent 1px)",
         backgroundSize: "60px 60px",
       }} />
 
       {/* Crimson vertical accent */}
       <div className="absolute inset-y-0 left-0 w-1" style={{
-        background: "linear-gradient(180deg, transparent, rgba(196,30,58,0.6), rgba(196,30,58,0.2), transparent)"
+        background: "linear-gradient(180deg, transparent, rgba(228,87,86,0.68), rgba(112,31,45,0.32), transparent)"
       }} />
 
       {/* ── Section Header ── */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 mb-12">
         <div className="flex items-center gap-4 mb-2">
-          <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(196,30,58,0.5))" }} />
-          <div className="text-[10px] font-mono tracking-[0.4em] text-reverie-crimson/80 uppercase">Poneglyph Queue</div>
-          <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, rgba(196,30,58,0.5), transparent)" }} />
+          <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(228,87,86,0.55))" }} />
+          <div className="text-[10px] font-mono tracking-[0.4em] text-reverie-crimson/80 uppercase">Grand Line Queue</div>
+          <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, rgba(228,87,86,0.55), transparent)" }} />
         </div>
         <h2 className="text-3xl sm:text-4xl font-serif font-black text-white tracking-wide text-center">
           THE WAITING FLEET
@@ -95,20 +95,20 @@ export function PoneglyphQueueView({ userRegistration, queueList }: PoneglyphQue
               className="relative rounded-2xl p-5 overflow-hidden"
               style={{
                 background: "linear-gradient(135deg, rgba(30,18,2,0.98) 0%, rgba(10,8,1,0.99) 100%)",
-                border: "2px solid rgba(212,175,55,0.6)",
-                boxShadow: "0 0 50px rgba(212,175,55,0.3)",
+                border: "2px solid rgba(233,185,73,0.72)",
+                boxShadow: "0 0 50px rgba(233,185,73,0.24)",
               }}
             >
               <div className="h-1 absolute top-0 inset-x-0" style={{
-                background: "linear-gradient(90deg, transparent, #d4af37, #ffbf00, #d4af37, transparent)"
+                background: "linear-gradient(90deg, transparent, #007c83, #e9b949, #007c83, transparent)"
               }} />
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0"
                   style={{
-                    background: "linear-gradient(135deg, rgba(212,175,55,0.2) 0%, rgba(10,8,2,0.9) 100%)",
-                    border: "1px solid rgba(212,175,55,0.5)",
+                    background: "linear-gradient(135deg, rgba(0,124,131,0.22) 0%, rgba(16,26,53,0.92) 100%)",
+                    border: "1px solid rgba(131,197,190,0.48)",
                   }}>
-                  <ShipIcon color="#ffbf00" size={32} />
+                  <ShipIcon color="#e9b949" size={32} />
                 </div>
                 <div>
                   <div className="text-[10px] font-mono tracking-[0.3em] text-tesoro-gold/70 uppercase mb-0.5">Active Boarding Permit</div>
@@ -127,17 +127,17 @@ export function PoneglyphQueueView({ userRegistration, queueList }: PoneglyphQue
               className="relative rounded-2xl p-5 overflow-hidden"
               style={{
                 background: "linear-gradient(135deg, rgba(8,18,38,0.98) 0%, rgba(4,10,22,0.99) 100%)",
-                border: "1px solid rgba(196,30,58,0.35)",
-                boxShadow: "0 0 30px rgba(196,30,58,0.1)",
+                border: "1px solid rgba(228,87,86,0.4)",
+                boxShadow: "0 0 30px rgba(228,87,86,0.12)",
               }}
             >
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0 animate-breathe"
                   style={{
-                    background: "linear-gradient(135deg, rgba(196,30,58,0.15) 0%, rgba(4,10,22,0.95) 100%)",
-                    border: "1px solid rgba(196,30,58,0.4)",
+                    background: "linear-gradient(135deg, rgba(228,87,86,0.15) 0%, rgba(16,26,53,0.95) 100%)",
+                    border: "1px solid rgba(228,87,86,0.5)",
                   }}>
-                  <ShipIcon color="#c41e3a" size={28} />
+                  <ShipIcon color="#e45756" size={28} />
                 </div>
                 <div className="flex-1">
                   <div className="text-[10px] font-mono tracking-[0.3em] text-reverie-crimson/70 uppercase mb-0.5">Your Position</div>
@@ -160,19 +160,20 @@ export function PoneglyphQueueView({ userRegistration, queueList }: PoneglyphQue
 
         {/* ── Ship approach visual ── */}
         <div
-          className="relative rounded-2xl overflow-hidden"
+          className="queue-route relative overflow-hidden"
           style={{
-            background: "rgba(4,10,22,0.9)",
-            border: "1px solid rgba(212,175,55,0.15)",
+            background: "linear-gradient(110deg, rgba(4,10,22,0.72), rgba(6,14,25,0.46))",
+            borderTop: "1px solid rgba(131,197,190,0.28)",
+            borderBottom: "1px solid rgba(131,197,190,0.18)",
           }}
         >
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-3 border-b"
-            style={{ borderColor: "rgba(212,175,55,0.12)" }}>
+            style={{ borderColor: "rgba(131,197,190,0.15)" }}>
             <div className="flex items-center gap-2">
               <ShipIcon size={16} />
               <span className="text-xs font-mono text-tesoro-gold/80 uppercase tracking-wider">
-                {queueList.length === 0 ? "No Crews Waiting" : `${queueList.length} Crews Approaching`}
+                {queueList.length === 0 ? "No Crews Waiting" : `${queueList.length} Crews on Route`}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -199,6 +200,7 @@ export function PoneglyphQueueView({ userRegistration, queueList }: PoneglyphQue
                     return (
                       <motion.div
                         key={crew.id}
+                        layout="position"
                         className="flex flex-col items-center gap-0.5 shrink-0"
                         initial={{ x: -20, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
@@ -207,7 +209,7 @@ export function PoneglyphQueueView({ userRegistration, queueList }: PoneglyphQue
                       >
                         <div style={{ opacity: 0.4 + pct * 0.6 }}>
                           <ShipIcon
-                            color={isUser ? "#ffbf00" : i === 0 ? "#d4af37" : `rgba(212,175,55,${0.3 + pct * 0.4})`}
+                            color={isUser ? "#83c5be" : i === 0 ? "#e9b949" : `rgba(233,185,73,${0.3 + pct * 0.4})`}
                             size={isUser ? 24 : 16 + pct * 10}
                           />
                         </div>
@@ -219,7 +221,7 @@ export function PoneglyphQueueView({ userRegistration, queueList }: PoneglyphQue
                   })}
                   {/* Grand Line destination glow */}
                   <div className="ml-auto flex flex-col items-center justify-end shrink-0">
-                    <div className="w-px h-8 rounded-full animate-pulse" style={{ background: "linear-gradient(to top, #d4af37, transparent)" }} />
+                    <div className="w-px h-8 rounded-full animate-pulse" style={{ background: "linear-gradient(to top, #83c5be, transparent)" }} />
                     <div className="text-[7px] font-mono text-tesoro-gold/60 uppercase mt-0.5">Grand Line</div>
                   </div>
                 </div>
@@ -230,27 +232,28 @@ export function PoneglyphQueueView({ userRegistration, queueList }: PoneglyphQue
               }} />
 
               {/* Queue rows */}
-              <div className="divide-y" style={{ borderColor: "rgba(212,175,55,0.06)" }}>
+              <div className="queue-route-rows divide-y" style={{ borderColor: "rgba(131,197,190,0.09)" }}>
                 {displayQueue.map((crew: any, i: number) => {
                   const isUser = crew.queue_position === userPos;
                   const isFirst = i === 0;
                   return (
                     <motion.div
                       key={crew.id}
+                      layout="position"
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.04 }}
-                      className="flex items-center gap-4 px-5 py-3.5 relative"
+                      className="queue-voyage-row flex items-center gap-4 px-5 py-3.5 relative"
                       style={{
                         background: isUser
-                          ? "linear-gradient(90deg, rgba(212,175,55,0.07) 0%, transparent 100%)"
+                          ? "linear-gradient(90deg, rgba(0,124,131,0.12) 0%, transparent 100%)"
                           : isFirst
                           ? "linear-gradient(90deg, rgba(100,200,100,0.04) 0%, transparent 100%)"
                           : undefined,
                       }}
                     >
                       {isUser && (
-                        <div className="absolute inset-y-0 left-0 w-0.5" style={{ background: "#d4af37" }} />
+                        <div className="absolute inset-y-0 left-0 w-0.5" style={{ background: "#83c5be" }} />
                       )}
                       <PositionBadge pos={crew.queue_position} isUser={isUser} />
                       <div className="flex-1 min-w-0">
@@ -270,11 +273,11 @@ export function PoneglyphQueueView({ userRegistration, queueList }: PoneglyphQue
                         )}
                         {isUser && (
                           <div className="px-2 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider"
-                            style={{ background: "rgba(212,175,55,0.1)", border: "1px solid rgba(212,175,55,0.35)", color: "#d4af37" }}>
+                            style={{ background: "rgba(0,124,131,0.15)", border: "1px solid rgba(131,197,190,0.42)", color: "#83c5be" }}>
                             YOU
                           </div>
                         )}
-                        <ShipIcon color={isUser ? "#ffbf00" : "rgba(212,175,55,0.3)"} size={14} />
+                        <ShipIcon color={isUser ? "#83c5be" : "rgba(233,185,73,0.42)"} size={14} />
                       </div>
                     </motion.div>
                   );
@@ -285,7 +288,7 @@ export function PoneglyphQueueView({ userRegistration, queueList }: PoneglyphQue
                 <button
                   onClick={() => setExpanded(v => !v)}
                   className="w-full py-3 text-[11px] font-mono text-tesoro-gold/50 hover:text-tesoro-gold uppercase tracking-wider transition-colors"
-                  style={{ borderTop: "1px solid rgba(212,175,55,0.08)" }}
+                  style={{ borderTop: "1px solid rgba(131,197,190,0.12)" }}
                 >
                   {expanded ? "▲ Show Less" : `▼ Show All ${queueList.length} Crews`}
                 </button>

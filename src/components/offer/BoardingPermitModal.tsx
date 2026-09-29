@@ -42,7 +42,16 @@ function CompassCountdown({ pct, timeStr }: { pct: number; timeStr: string }) {
   const r = 54;
   const circ = 2 * Math.PI * r;
   const offset = circ * (1 - pct);
-  const isUrgent = pct < 0.25;
+  const [minutes, seconds] = timeStr.split(":").map(Number);
+  const remainingSeconds = minutes * 60 + seconds;
+  const isUrgent = remainingSeconds <= 60;
+  const countdownLabel = remainingSeconds === 0
+    ? "PERMIT EXPIRED"
+    : remainingSeconds <= 10
+    ? "LAST CALL"
+    : remainingSeconds <= 60
+    ? "LOG POSE IS FADING"
+    : "BOARDING WINDOW OPEN";
 
   return (
     <div className="relative w-40 h-40 mx-auto flex items-center justify-center">
@@ -84,7 +93,9 @@ function CompassCountdown({ pct, timeStr }: { pct: number; timeStr: string }) {
           style={{ textShadow: isUrgent ? "0 0 20px rgba(196,30,58,0.6)" : "0 0 20px rgba(212,175,55,0.4)" }}>
           {timeStr}
         </div>
-        <div className="text-[9px] font-mono text-gray-500 uppercase tracking-wider mt-0.5">REMAINING</div>
+        <div className={`text-[8px] font-mono uppercase tracking-[0.12em] mt-1 whitespace-nowrap ${isUrgent ? "text-reverie-crimson" : "text-[#83c5be]"}`}>
+          {countdownLabel}
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Navbar } from "@/components/navigation/Navbar";
 import { CinematicLoader } from "@/components/scene/CinematicLoader";
 import { LandingHero } from "@/components/scene/LandingHero";
@@ -9,7 +9,7 @@ import { AssembleCrewForm } from "@/components/registration/AssembleCrewForm";
 import { PoneglyphQueueView } from "@/components/waitlist/PoneglyphQueueView";
 import { BoardingPermitModal } from "@/components/offer/BoardingPermitModal";
 import { GrandLineAccessPass } from "@/components/pass/GrandLineAccessPass";
-import { INITIAL_WAITLIST_CREWS, DEMO_EVENT } from "@/lib/constants";
+import { DEMO_EVENT } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/client";
 
 export default function HomePage() {
@@ -20,18 +20,7 @@ export default function HomePage() {
   const [activeOffer, setActiveOffer] = useState<any>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [shamblesActive, setShamblesActive] = useState(false);
-
-  const defaultQueue = useMemo(
-    () =>
-      INITIAL_WAITLIST_CREWS.map((name, index) => ({
-        id: `waitlist-${index + 1}`,
-        crew_name: name,
-        captain_name: `Captain ${name.split(" ")[0]}`,
-        queue_position: index + 1,
-        created_at: new Date(Date.now() - (10 - index) * 60000).toISOString(),
-      })),
-    []
-  );
+  const lastConfirmedCount = useRef<number | null>(null);
 
   const fetchFleetState = useCallback(async () => {
     try {
@@ -41,12 +30,15 @@ export default function HomePage() {
       ]);
       const eventJson = await eventRes.json();
       const queueJson = await queueRes.json();
-      setEventData(eventJson);
-      if (queueJson.queue && queueJson.queue.length > 0) {
-        setQueueList(queueJson.queue);
-      } else {
-        setQueueList(defaultQueue);
+      const nextConfirmedCount = Number(eventJson.confirmed_count);
+      if (Number.isFinite(nextConfirmedCount)) {
+        if (lastConfirmedCount.current !== null && nextConfirmedCount < lastConfirmedCount.current) {
+          setShamblesActive(true);
+        }
+        lastConfirmedCount.current = nextConfirmedCount;
       }
+      setEventData(eventJson);
+      setQueueList(Array.isArray(queueJson.queue) ? queueJson.queue : []);
       if (eventJson.active_offer) {
         setActiveOffer(eventJson.active_offer);
       }
@@ -57,9 +49,9 @@ export default function HomePage() {
         available_capacity: DEMO_EVENT.DEMO_REMAINING,
         waitlist_count: DEMO_EVENT.DEMO_WAITLIST,
       });
-      setQueueList(defaultQueue);
+      setQueueList([]);
     }
-  }, [defaultQueue]);
+  }, []);
 
   useEffect(() => {
     fetchFleetState();
@@ -90,11 +82,7 @@ export default function HomePage() {
       const supabase = createClient();
       const channel = supabase
         .channel("fleet_updates")
-        .on("postgres_changes", { event: "*", schema: "public", table: "registrations" }, () => {
-          fetchFleetState();
-          // Trigger SHAMBLES animation when a berth is released/offered
-          setShamblesActive(true);
-        })
+        .on("postgres_changes", { event: "*", schema: "public", table: "registrations" }, () => fetchFleetState())
         .on("postgres_changes", { event: "*", schema: "public", table: "berth_offers" }, () => fetchFleetState())
         .on("postgres_changes", { event: "*", schema: "public", table: "events" }, () => fetchFleetState())
         .subscribe();
@@ -145,6 +133,7 @@ export default function HomePage() {
         capacity={capacity}
         availableCapacity={availableCapacity}
         waitlistCount={waitlistCount}
+        shamblesActive={shamblesActive}
       />
 
       {/* 2. Grand Line Interactive Capacity Map */}
@@ -157,40 +146,43 @@ export default function HomePage() {
         onShamblesComplete={() => setShamblesActive(false)}
       />
 
-      {/* 3. Gran Tesoro → Reverie section divider */}
-      <div
-        className="relative w-full py-10 overflow-hidden"
-        style={{
-          background: "linear-gradient(180deg, #020b14 0%, #08040a 50%, #020b14 100%)",
-          borderTop: "1px solid rgba(212,175,55,0.08)",
-          borderBottom: "1px solid rgba(196,30,58,0.08)",
-        }}
-      >
-        <div className="absolute inset-0 pointer-events-none" style={{
-          background: "radial-gradient(ellipse at 50% 50%, rgba(196,30,58,0.04) 0%, transparent 70%)"
-        }} />
-        <div className="relative max-w-4xl mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-6 flex-wrap">
-            <div>
-              <div className="text-[8px] font-mono tracking-[0.4em] text-tesoro-gold/40 uppercase">Theme</div>
-              <div className="text-sm font-serif font-bold text-tesoro-gold/80 tracking-widest uppercase">GRAN TESORO VIP GALA</div>
+      {/* 3. Gala to Reverie charter */}
+      <section id="themes" className="world-bridge">
+        <div className="world-bridge-inner grid items-center gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:gap-20">
+          <div className="tesoro-side">
+            <p className="mb-5 text-[9px] font-mono uppercase tracking-[0.35em] text-tesoro-gold/55">Two worlds. One passage.</p>
+            <div id="gala" className="flex items-center gap-5 border-l border-tesoro-gold/35 py-1 pl-5">
+              <span className="world-seal"><span>G</span></span>
+              <div>
+                <p className="text-[8px] font-mono uppercase tracking-[0.28em] text-tesoro-gold/50">The golden port</p>
+                <h2 className="mt-1 font-serif text-xl font-bold uppercase tracking-[0.1em] text-[#e4c26b] sm:text-2xl">Gran Tesoro VIP Gala</h2>
+                <p className="mt-1 text-[10px] font-mono uppercase tracking-[0.15em] text-parchment/55">Private access. Limited berths.</p>
+              </div>
             </div>
-            <div className="text-xl text-tesoro-gold/20 font-serif">×</div>
-            <div>
-              <div className="text-[8px] font-mono tracking-[0.4em] text-reverie-crimson/40 uppercase">Co-Hosted By</div>
-              <div className="text-sm font-serif font-bold text-reverie-crimson/70 tracking-widest uppercase">WORLD GOVERNMENT REVERIE</div>
-            </div>
-            <div className="text-xl text-tesoro-gold/20 font-serif">→</div>
-            <div>
-              <div className="text-[8px] font-mono tracking-[0.4em] text-white/30 uppercase">Event</div>
-              <div className="text-sm font-serif font-bold text-white/60 tracking-widest uppercase">FRONTEND ROULETTE 1.0</div>
+            <div className="ml-5 mt-5 h-8 w-px bg-gradient-to-b from-tesoro-gold/40 to-reverie-crimson/50" />
+            <div id="reverie" className="reverie-side flex items-center gap-5 border-l border-reverie-crimson/45 py-1 pl-5">
+              <span className="world-seal" style={{ borderColor: "rgba(196,30,58,0.55)", color: "#cf6267" }}><span>R</span></span>
+              <div>
+                <p className="text-[8px] font-mono uppercase tracking-[0.28em] text-reverie-crimson/70">The summit beyond the gates</p>
+                <h2 className="mt-1 font-serif text-xl font-bold uppercase tracking-[0.1em] text-[#e0b6a9] sm:text-2xl">World Government Reverie</h2>
+                <p className="mt-1 text-[10px] font-mono uppercase tracking-[0.15em] text-parchment/55">A chamber built for the chosen few.</p>
+              </div>
             </div>
           </div>
-          <div className="mt-4 text-[9px] font-mono text-gray-700 tracking-widest uppercase">
-            {DEMO_EVENT.DATE} • {DEMO_EVENT.VENUE} • {DEMO_EVENT.TIME}
+
+          <div className="official-charter border-t border-[#d4af37]/35 pt-5 lg:border-l lg:border-t-0 lg:pl-9 lg:pt-0">
+            <p className="text-[8px] font-mono uppercase tracking-[0.3em] text-tesoro-gold/50">Official Grand Line charter</p>
+            <h2 className="mt-2 font-serif text-2xl font-bold uppercase tracking-[0.06em] text-parchment sm:text-3xl">{DEMO_EVENT.NAME}</h2>
+            <p className="mt-2 text-[9px] font-mono uppercase tracking-[0.2em] text-reverie-crimson/80">Limited berth allocation</p>
+            <div className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-white/10 pt-4 text-[9px] font-mono uppercase tracking-[0.12em] text-parchment/65">
+              <span>{DEMO_EVENT.DATE}</span>
+              <span>{DEMO_EVENT.TIME}</span>
+              <span className="col-span-2">{DEMO_EVENT.VENUE}</span>
+              <span>{DEMO_EVENT.MIN_CREW_SIZE}–{DEMO_EVENT.MAX_CREW_SIZE} crew members</span>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* 4. Registration / Pass / Queue */}
       {userRegistration?.status === "CONFIRMED" ? (
@@ -221,60 +213,35 @@ export default function HomePage() {
         />
       )}
 
-      {/* 6. Footer */}
-      <footer
-        className="relative overflow-hidden text-center"
-        style={{
-          background: "linear-gradient(180deg, #010509 0%, #000304 100%)",
-          borderTop: "1px solid rgba(212,175,55,0.08)",
-        }}
-      >
-        <div className="h-px w-full" style={{
-          background: "linear-gradient(90deg, transparent, rgba(212,175,55,0.4), rgba(255,191,0,0.5), rgba(212,175,55,0.4), transparent)"
-        }} />
-        <div className="relative max-w-7xl mx-auto px-4 py-14">
-          <div className="flex flex-col items-center gap-4 mb-8">
-            <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center"
-              style={{
-                background: "linear-gradient(135deg, rgba(212,175,55,0.12) 0%, rgba(4,12,28,0.9) 100%)",
-                border: "1px solid rgba(212,175,55,0.25)",
-              }}
-            >
-              <span className="text-xl">⚓</span>
+      {/* 6. Captain's Log */}
+      <footer className="captains-log relative overflow-hidden">
+        <div className="captains-log-inner mx-auto grid max-w-7xl gap-9 px-6 py-12 md:grid-cols-[1fr_1.15fr_0.9fr] md:items-center lg:px-10">
+          <div className="captains-log-brand">
+            <p className="captains-log-kicker">Captain&apos;s Log · PS-09</p>
+            <h2 className="mt-3 font-serif text-2xl font-black uppercase tracking-[0.08em] text-[#f6e7c1] sm:text-3xl">Shambles Seating</h2>
+            <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.14em] text-[#83c5be]">Your berth. Your crew. Your voyage.</p>
+            <p className="mt-4 text-xs text-[#f6e7c1]/60">Crew of record: <span className="text-[#f6e7c1]/85">The Lost Poneglyph Files</span></p>
+          </div>
+
+          <div className="captains-log-chart" aria-label="Decorative Grand Line route chart">
+            <div className="flex items-center justify-between font-mono text-[8px] uppercase tracking-[0.2em] text-[#83c5be]/70">
+              <span>Magnetic course</span><span>Reverse Mountain</span>
             </div>
-            <div>
-              <div className="text-base font-serif font-bold tracking-[0.35em] gold-shimmer uppercase">
-                SHAMBLES SEATING
-              </div>
-              <div className="text-[9px] tracking-[0.25em] text-tesoro-gold/35 uppercase mt-1">
-                YOUR BERTH • YOUR CREW • YOUR VOYAGE
-              </div>
-            </div>
+            <svg viewBox="0 0 520 100" role="img" aria-label="A marked sea route crossing the Grand Line">
+              <path className="log-route-halo" d="M8 74 C68 65 63 28 132 40 S207 82 267 53 339 18 381 43 438 83 512 22" />
+              <path className="log-route-line" d="M8 74 C68 65 63 28 132 40 S207 82 267 53 339 18 381 43 438 83 512 22" />
+              {[8, 132, 267, 381, 512].map((x, index) => <circle key={x} className={index === 4 ? "log-route-end" : "log-route-point"} cx={x} cy={[74, 40, 53, 43, 22][index]} r={index === 4 ? 5 : 3} />)}
+            </svg>
+            <div className="flex justify-between font-mono text-[8px] text-[#f6e7c1]/38"><span>N 44°12′</span><span>W 28°09′</span></div>
           </div>
 
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <div className="flex-1 max-w-xs h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(212,175,55,0.15))" }} />
-            <span className="text-tesoro-gold/25">⚓</span>
-            <div className="flex-1 max-w-xs h-px" style={{ background: "linear-gradient(90deg, rgba(212,175,55,0.15), transparent)" }} />
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-6 mb-6 text-[10px] font-mono">
-            {["#capacity", "#rsvp", "#queue"].map((href, i) => (
-              <a
-                key={href}
-                href={href}
-                className="text-gray-600 hover:text-tesoro-gold/70 uppercase tracking-widest transition-colors"
-              >
-                {["Fleet Capacity", "Assemble Crew", "Poneglyph Queue"][i]}
-              </a>
-            ))}
-          </div>
-
-          <div className="space-y-1.5 text-[10px] font-mono">
-            <div className="text-gray-700">{DEMO_EVENT.NAME} • {DEMO_EVENT.DATE} • {DEMO_EVENT.VENUE}</div>
-            <div className="text-gray-800">Gran Tesoro VIP Gala & Reverie Summit • PS-09 Smart Event RSVP System</div>
-            <div className="text-tesoro-gold/15 tracking-widest mt-3">⚓ N 44°12′ W 28°09′ — GRAND LINE FLEET REGISTRY</div>
+          <div className="captains-log-record">
+            <p className="captains-log-kicker">Official event charter</p>
+            <h3 className="mt-2 font-serif text-lg font-bold uppercase text-[#e9b949]">{DEMO_EVENT.NAME}</h3>
+            <p className="mt-2 text-[10px] leading-5 text-[#f6e7c1]/65">{DEMO_EVENT.DATE} · {DEMO_EVENT.TIME}<br />{DEMO_EVENT.VENUE}</p>
+            <nav className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[9px] font-mono uppercase tracking-[0.1em]" aria-label="Footer navigation">
+              {[["#capacity", "Voyage"], ["#rsvp", "Manifest"], ["#queue", "Queue"]].map(([href, label]) => <a key={href} href={href}>{label}</a>)}
+            </nav>
           </div>
         </div>
       </footer>

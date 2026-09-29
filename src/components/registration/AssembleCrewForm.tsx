@@ -207,7 +207,7 @@ export function AssembleCrewForm({ availableCapacity, currentUser, onSuccess }: 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="block text-[10px] font-mono tracking-[0.25em] text-tesoro-gold/70 uppercase">
-                  Captain's Email *
+                  Captain&apos;s Email *
                 </label>
                 <input
                   type="email"

@@ -60,7 +60,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex overflow-hidden" style={{ background: "#030810" }}>
+    <div className="auth-world relative min-h-screen flex overflow-hidden" style={{ background: "#030810" }}>
       {/* LEFT: Cinematic image panel (hidden on mobile) */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         <Image
@@ -120,7 +120,7 @@ export default function LoginPage() {
 
           {/* Card */}
           <div
-            className="rounded-3xl p-8 relative overflow-hidden"
+            className="auth-credential p-8 relative overflow-hidden"
             style={{
               background: "linear-gradient(160deg, rgba(8,18,38,0.97) 0%, rgba(6,12,28,0.99) 100%)",
               border: "1px solid rgba(212,175,55,0.25)",
@@ -138,8 +138,8 @@ export default function LoginPage() {
               >
                 <Compass className="w-7 h-7 text-tesoro-gold animate-spin-slower" />
               </div>
-              <h1 className="text-2xl font-serif font-black gold-shimmer tracking-wider">FLEET ACCESS SIGN IN</h1>
-              <p className="text-xs font-mono text-gray-500 mt-2">Authenticate to manage crew charter & boarding credentials.</p>
+              <h1 className="text-2xl font-serif font-black gold-shimmer tracking-wider">ENTER THE GRAND LINE</h1>
+              <p className="text-xs font-mono text-gray-400 mt-2">Present your captain&apos;s credentials to continue.</p>
             </div>
 
             {/* Error */}
@@ -158,7 +158,7 @@ export default function LoginPage() {
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-[10px] font-mono text-tesoro-gold/70 uppercase tracking-[0.2em] mb-1.5">Email Address</label>
+                <label className="block text-[10px] font-mono text-tesoro-gold/70 uppercase tracking-[0.2em] mb-1.5">Email</label>
                 <input
                   type="email"
                   name="email"
@@ -172,7 +172,7 @@ export default function LoginPage() {
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="block text-[10px] font-mono text-tesoro-gold/70 uppercase tracking-[0.2em]">Password</label>
                   <Link href="/forgot-password" className="text-[10px] font-mono text-tesoro-gold/60 hover:text-tesoro-gold transition-colors">
-                    Forgot?
+                    Recover Voyage Credentials
                   </Link>
                 </div>
                 <input
@@ -204,7 +204,7 @@ export default function LoginPage() {
                 ) : (
                   <span className="flex items-center justify-center gap-2">
                     <Anchor className="w-4 h-4" />
-                    Sign In to Voyage
+                    Enter the Grand Line
                   </span>
                 )}
               </motion.button>
@@ -214,7 +214,7 @@ export default function LoginPage() {
             <div className="mt-6 pt-5 border-t border-tesoro-gold/10 text-center text-xs font-mono text-gray-500">
               Not yet enlisted?{" "}
               <Link href="/signup" className="text-tesoro-gold hover:text-tesoro-amber font-bold transition-colors">
-                Register New Crew Account
+                Enlist Your Crew
               </Link>
             </div>
           </div>
